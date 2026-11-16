@@ -482,7 +482,7 @@ function init(){
   wordsWrap.style.left=x+'px';wordsWrap.style.top=y+'px';
  }
  function resetSequence(){
-  clearTimeout(closingTimer);closingTimer=null;phrase.classList.remove('is-expired');
+  clearTimeout(closingTimer);closingTimer=null;
   sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();wordAnimation=null;
   completedWords=0;requestedWords=0;sequenceRunning=false;wordsWrap.style.opacity='0';wordsWrap.textContent='';
   page.classList.remove('dpnco-footer-visible');
@@ -503,6 +503,7 @@ function init(){
    }
   }catch(error){if(disposed||epoch!==sequenceEpoch)return;console.warn('DPNCO motto animation interrupted',error);}
   if(epoch!==sequenceEpoch||disposed)return;
+  if(completedWords===mottoWords.length)phrase.classList.remove('is-expired');
   sequenceRunning=false;update();
  }
  var lastMottoScrollY=window.scrollY;
