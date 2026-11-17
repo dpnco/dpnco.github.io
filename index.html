@@ -464,27 +464,16 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  box-sizing:border-box;width:33.333vw;max-width:calc(100vw - 48px);
  margin:0 auto;color:#f7f6f2!important;text-align:left!important;
  font-family:Georgia,'Times New Roman',serif!important;
- font-size:clamp(20px,1.4vw,26px)!important;font-weight:400!important;
+ font-size:clamp(26px,1.82vw,33.8px)!important;font-weight:400!important;
  font-style:normal!important;line-height:1.5!important;
- letter-spacing:.005em;text-shadow:0 1px 3px rgba(16,35,48,.60),0 3px 13px rgba(18,37,50,.46);
+ letter-spacing:.005em;text-shadow:none!important;
 }
 .dpnco-founder-statement-signature{
  box-sizing:border-box;width:33.333vw;max-width:calc(100vw - 48px);
  margin:0 auto;color:#f7f6f2!important;opacity:.96;text-align:left!important;
  font-family:Georgia,'Times New Roman',serif!important;
  font-size:clamp(17px,1.14vw,21px)!important;font-weight:400!important;
- font-style:normal!important;line-height:1.45!important;letter-spacing:.035em;text-shadow:0 1px 3px rgba(16,35,48,.56),0 3px 10px rgba(18,37,50,.4);
-}
-/* A restrained pearly glint as the water ripples behind the handwritten note. */
-@keyframes dpnco-handwritten-sparkle{
- 0%,67%,86%,100%{text-shadow:0 1px 3px rgba(16,35,48,.60),0 3px 13px rgba(18,37,50,.46);}
- 71%{text-shadow:0 1px 3px rgba(16,35,48,.60),0 3px 13px rgba(18,37,50,.46),0 0 9px rgba(255,255,255,.17);}
- 74%{text-shadow:0 1px 3px rgba(16,35,48,.60),0 3px 13px rgba(18,37,50,.46),0 0 14px rgba(255,255,255,.28);}
- 78%{text-shadow:0 1px 3px rgba(16,35,48,.60),0 3px 13px rgba(18,37,50,.46);}
-}
-.dpnco-statement-active .dpnco-founder-statement-copy,
-.dpnco-statement-active .dpnco-founder-statement-signature{
- animation:dpnco-handwritten-sparkle 9s ease-in-out infinite;
+ font-style:normal!important;line-height:1.45!important;letter-spacing:.035em;text-shadow:none!important;
 }
 .dpnco-statement-active .dpnco-founder-statement{
  opacity:1;visibility:visible;transition:opacity 2300ms ease 300ms,visibility 0s;
@@ -511,7 +500,7 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 }
 @media(max-width:600px){
  .dpnco-founder-statement{padding:28px 25px;gap:24px;}
- .dpnco-founder-statement-copy{width:calc(100vw - 56px);max-width:480px;font-size:clamp(20px,5.1vw,23px)!important;line-height:1.46!important;}
+ .dpnco-founder-statement-copy{width:calc(100vw - 56px);max-width:480px;font-size:clamp(26px,6.63vw,29.9px)!important;line-height:1.46!important;}
  .dpnco-founder-statement-signature{width:calc(100vw - 56px);max-width:480px;}
 }
 @media(prefers-reduced-motion:reduce){
