@@ -489,6 +489,9 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 @media(prefers-reduced-motion:reduce){.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut{transition:none;}}
 /* Phone-sized layout only; existing desktop rules and interactions are unchanged. */
 @media screen and (max-width:600px){
+ /* Extend the water behind iPhone Safari's bottom controls; 100svh was short. */
+ .hero{height:100dvh!important;min-height:100dvh!important;}
+ .body-black{background-color:#4d8197;}
  .hero .dpnco-rain-toggle,
  .hero .dpnco-rain-toggle.dpnco-sound-toggle,
  .dpnco-river-contact a,
