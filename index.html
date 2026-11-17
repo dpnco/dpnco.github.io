@@ -12,7 +12,7 @@
   <link href="css/dennys-ripple.webflow.css" rel="stylesheet" type="text/css">
   <link href="https://fonts.googleapis.com" rel="preconnect">
   <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin="anonymous">
-  <link href="https://fonts.googleapis.com/css2?family=La+Belle+Aurore&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400&amp;display=swap" rel="stylesheet">
   <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js" type="text/javascript"></script>
   <script type="text/javascript">WebFont.load({  google: {    families: ["DM Sans:300,400,500,600,700,800,900","Pixelify Sans:400,500,600,700","Rubik Pixels:400"]  }});</script>
   <script type="text/javascript">!function(o,c){var n=c.documentElement,t=" w-mod-";n.className+=t+"js",("ontouchstart"in o||o.DocumentTouch&&c instanceof DocumentTouch)&&(n.className+=t+"touch")}(window,document);</script>
@@ -339,101 +339,8 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initSoftScroll,{once:true});else initSoftScroll();
 })();
 </script>
-    <!--  DPNCO logo: five genuine recorded gayageum strings. CC0 recordings by spt3125 on Freesound.  -->
-    <style id="dpnco-gayageum-hover-style">
-.hero .dpnco-vector-logo {pointer-events:auto!important;}
-.hero .dpnco-vector-logo.dpnco-wordmark-ready .dpnco-vector-art {visibility:hidden!important;}
-.hero .dpnco-gayageum-zones {
- position:absolute;left:50%;top:50%;z-index:5;transform:translate(-50%,-50%);
- display:flex;align-items:baseline;justify-content:center;gap:clamp(7px,.9vw,14px);
- width:max-content;height:auto;pointer-events:auto;white-space:nowrap;line-height:1;
-}
-.hero .dpnco-gayageum-zone {
- appearance:none;display:inline-block;padding:0;margin:0;border:0;
- background:transparent!important;color:#ffffff!important;
- font-family:Georgia,"Times New Roman",serif!important;
- font-size:clamp(23px,3.1vw,46px)!important;font-weight:900!important;
- line-height:1!important;letter-spacing:0!important;
- cursor:pointer;touch-action:manipulation;white-space:nowrap;
- transition:color 180ms ease;
-}
-.hero .dpnco-gayageum-zone[data-note-index="4"] {position:relative;}
-.hero .dpnco-gayageum-zone[data-note-index="4"]::after {content:".";position:absolute;left:calc(100% + .08em);bottom:-.02em;font:inherit;font-size:.8em;line-height:1;color:#fff;pointer-events:none;}
-.hero .dpnco-gayageum-zone:hover,
-.hero .dpnco-gayageum-zone:focus-visible,
-.hero .dpnco-gayageum-zone:active {color:#FFF2AC!important;}
-.hero .dpnco-gayageum-zone:focus-visible {outline:1px dashed rgba(255,255,255,.85);outline-offset:3px;}
-@media(prefers-reduced-motion:reduce){.hero .dpnco-gayageum-zone{transition:none;}}
-</style>
-    <script id="dpnco-gayageum-hover-notes">
-(function(){
- function initGayageum(){
-  var hero=document.querySelector('.hero');
-  var logo=hero&&hero.querySelector('.dpnco-vector-logo');
-  if(!hero||!logo)return;
-  if(window.dpncoGayageumNotes)window.dpncoGayageumNotes.dispose();
-  var events=new AbortController(),signal=events.signal;
-  var letters=['d','p','n','c','o','c','o'],pitches=['G3','A3','C4','D4','E4','G4','A4'];
-  var sources={
-   G3:'https://cdn.freesound.org/previews/24/24572_164315-lq.mp3',
-   A3:'https://cdn.freesound.org/previews/24/24552_164315-lq.mp3',
-   C4:'https://cdn.freesound.org/previews/24/24559_164315-lq.mp3',
-   D4:'https://cdn.freesound.org/previews/24/24563_164315-lq.mp3',
-   E4:'https://cdn.freesound.org/previews/24/24567_164315-lq.mp3',
-   G4:'https://cdn.freesound.org/previews/24/24573_164315-lq.mp3',
-   A4:'https://cdn.freesound.org/previews/24/24553_164315-lq.mp3'
-  };
-  var active=[],disposed=false;
-  function soundEnabled(){
-   var frog=hero.querySelector('[data-dpnco-sound-toggle]');
-   return !disposed&&!document.documentElement.classList.contains('dpnco-statement-active')&&hero.dataset.dpncoRainOn==='true'&&frog&&frog.getAttribute('aria-pressed')==='true';
-  }
-  function stopAll(){
-   active.forEach(function(a){a.pause();a.removeAttribute('src');a.load();});
-   active.length=0;
-  }
-  function playNote(pitch){
-   if(!soundEnabled())return;
-   var src=sources[pitch];if(!src)return;
-   var player=new Audio(src);player.preload='auto';player.volume=.416;
-   active.push(player);
-   function release(){
-    var i=active.indexOf(player);
-    if(i>=0)active.splice(i,1);
-    player.removeAttribute('src');
-    player.load();
-   }
-   player.addEventListener('ended',release,{once:true});
-   player.addEventListener('error',release,{once:true});
-   var promise=player.play();
-   if(promise&&promise.catch)promise.catch(function(){release();});
-  }
-  var zones=document.createElement('div');
-  zones.className='dpnco-gayageum-zones';
-  zones.setAttribute('role','group');
-  zones.setAttribute('aria-label','dpnco.co, seven real gayageum notes; the period is silent');
-  pitches.forEach(function(pitch,i){
-   var key=document.createElement('button');key.type='button';
-   key.className='dpnco-gayageum-zone';key.textContent=letters[i];key.setAttribute('data-letter',letters[i]);key.setAttribute('data-note-index',String(i));key.setAttribute('aria-label',letters[i]+': gayageum '+pitch);
-   key.setAttribute('title',letters[i]+' · '+pitch);
-   key.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')playNote(pitch);},{signal:signal});
-   key.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();playNote(pitch);},{signal:signal});
-   zones.appendChild(key);
-  });
-  logo.appendChild(zones);logo.classList.add('dpnco-wordmark-ready');
-  function turnOffIfNeeded(e){
-   if(e.target&&e.target.closest&&e.target.closest('[data-dpnco-rain-toggle],[data-dpnco-sound-toggle]')){
-    queueMicrotask(function(){if(!soundEnabled())stopAll();});
-   }
-  }
-  hero.addEventListener('click',turnOffIfNeeded,{capture:true,signal:signal});
-  hero.addEventListener('keydown',turnOffIfNeeded,{capture:true,signal:signal});
-  window.dpncoGayageumNotes={suspend:stopAll,dispose:function(){disposed=true;events.abort();stopAll();zones.remove();logo.classList.remove('dpnco-wordmark-ready');}};
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initGayageum,{once:true});
- else initGayageum();
-})();
-</script>
+    <!-- Original DPNCO logo retained; musical keyboard and instrument samples removed. -->
+
   </div>
   <div class="w-embed w-script">
     <style id="dpnco-three-section-style">
@@ -462,14 +369,18 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 }
 .dpnco-founder-statement-copy{
  box-sizing:border-box;width:33.333vw;max-width:calc(100vw - 48px);
- margin:0 auto;color:#fff!important;text-align:center;
- font:400 clamp(21px,1.35vw,25px)/1.5 'La Belle Aurore','Segoe Print',cursive;
- letter-spacing:.005em;text-shadow:0 1px 12px rgba(29,45,51,.15);
+ margin:0 auto;color:#f7f6f2!important;text-align:left!important;
+ font-family:'Dancing Script','Segoe Script','Brush Script MT',cursive!important;
+ font-size:clamp(19px,1.3vw,23px)!important;font-weight:400!important;
+ font-style:normal!important;line-height:1.5!important;
+ letter-spacing:.005em;text-shadow:0 1px 12px rgba(29,45,51,.2);
 }
 .dpnco-founder-statement-signature{
- margin:0 auto;color:#fff!important;opacity:.94;text-align:center;
- font:400 clamp(18px,1.2vw,23px)/1.45 'La Belle Aurore','Segoe Print',cursive;
- letter-spacing:.035em;
+ box-sizing:border-box;width:33.333vw;max-width:calc(100vw - 48px);
+ margin:0 auto;color:#f7f6f2!important;opacity:.96;text-align:left!important;
+ font-family:'Dancing Script','Segoe Script','Brush Script MT',cursive!important;
+ font-size:clamp(16px,1.12vw,20px)!important;font-weight:400!important;
+ font-style:normal!important;line-height:1.45!important;letter-spacing:.035em;
 }
 /* A restrained pearly glint as the water ripples behind the handwritten note. */
 @keyframes dpnco-handwritten-sparkle{
@@ -492,12 +403,18 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 .dpnco-statement-active .hero .dpnco-vector-logo{
  opacity:0!important;pointer-events:none!important;
 }
-.dpnco-statement-active .hero [data-dpnco-sound-toggle]{
- visibility:visible!important;pointer-events:none!important;
+.dpnco-statement-active .hero .dpnco-rain-toggle.dpnco-sound-toggle{
+ display:flex!important;visibility:visible!important;opacity:1!important;
+ pointer-events:auto!important;z-index:1205!important;right:68px!important;
+}
+.dpnco-statement-active .hero .dpnco-zen-frog-img{
+ display:block!important;visibility:visible!important;
+ filter:drop-shadow(0 1px 2px rgba(31,59,65,.55))!important;
 }
 @media(max-width:600px){
  .dpnco-founder-statement{padding:28px 25px;gap:24px;}
- .dpnco-founder-statement-copy{width:calc(100vw - 56px);max-width:480px;font-size:clamp(20px,5.4vw,23px);line-height:1.38;}
+ .dpnco-founder-statement-copy{width:calc(100vw - 56px);max-width:480px;font-size:clamp(19px,5vw,22px)!important;line-height:1.46!important;}
+ .dpnco-founder-statement-signature{width:calc(100vw - 56px);max-width:480px;}
 }
 @media(prefers-reduced-motion:reduce){
  .dpnco-founder-statement{transition:none;}
@@ -532,9 +449,7 @@ function init(){
   if(disposed||statementState!=='idle'||!page.classList.contains('dpnco-footer-visible'))return;
   statementState='visible';lockedScrollY=window.scrollY;
   window.dpncoStatementLock=true;
-  var audio=currentSound();soundWasPlaying=!!(audio&&!audio.paused);
-  if(audio)audio.pause();
-  if(window.dpncoGayageumNotes&&window.dpncoGayageumNotes.suspend)window.dpncoGayageumNotes.suspend();
+  // Keep the frog-controlled ambient water sound running; the instrument notes are removed.
   document.documentElement.classList.add('dpnco-statement-active');
  }
  function dismissStatement(){
@@ -545,11 +460,7 @@ function init(){
    document.documentElement.classList.remove('dpnco-statement-active','dpnco-statement-dismissing');
    window.dpncoStatementLock=false;
    statementState='done';
-   var audio=currentSound(),frog=hero.querySelector('[data-dpnco-sound-toggle]');
-   if(soundWasPlaying&&audio&&frog&&frog.getAttribute('aria-pressed')==='true'&&hero.dataset.dpncoRainOn==='true'){
-    var play=audio.play();if(play&&play.catch)play.catch(function(){});
-   }
-   soundWasPlaying=false;lastMottoScrollY=window.scrollY;
+   lastMottoScrollY=window.scrollY;
   },window.matchMedia('(prefers-reduced-motion:reduce)').matches?0:1000);
  }
  function holdScrollGesture(e){
