@@ -880,7 +880,9 @@ $('.grid_card.card_4').ripples({
   <!-- Reflection 01 comparison: change specular rim only; original ripple physics remain unc
   <style id="dpnco-subtle-letter-refraction-style">
   /* Only replace the logo's pixels after WebGL has the matching texture. */
-  .hero.dpnco-letter-water-ready .dpnco-vector-art { opacity:0!important; }
+  /* The visible logo is the original interactive seven-note lettering; it is
+     rasterized into the water texture. Keep its hit areas for hover sound. */
+  .hero.dpnco-letter-water-ready .dpnco-gayageum-zones { opacity:0!important; }
   </style>
 <!-- 02 comparison: original 01A-S layout, medium water waves, and white-edge strength; clearer depth + submerged lettering. -->
   <script id="dpnco-reflection-subtle-lettering">
@@ -889,24 +891,49 @@ $('.grid_card.card_4').ripples({
   // 01A white-edge water remains unchanged. The logo is sampled through
   // the exact same wave normals as the water, with a maximum 1.6px bend.
   var hero=document.querySelector('.hero');
-  var logo=hero&&hero.querySelector('.dpnco-vector-art');
-  if(!hero||!logo)return;
+  if(!hero)return;
+  var zones=null;
   var tries=0,water=null,gl=null,program=null,locations=null,logoTexture=null,resizeFrame=0;
   var logoSurface=document.createElement('canvas');
   var surface=logoSurface.getContext('2d',{alpha:true});
   function updateLogo(){
-    if(!water||!gl||!program||!surface||!logo.complete||!logo.naturalWidth)return false;
+    if(!water||!gl||!program||!surface||!zones||!zones.isConnected)return false;
     var rect=hero.getBoundingClientRect();
-    var letterRect=logo.getBoundingClientRect();
+    var letterRect=zones.getBoundingClientRect();
     var w=water.canvas.width,h=water.canvas.height;
     if(w<1||h<1||rect.width<1||rect.height<1||letterRect.width<1)return false;
     logoSurface.width=w;logoSurface.height=h;
     var xScale=w/rect.width,yScale=h/rect.height;
     surface.clearRect(0,0,w,h);
     try{
-      surface.drawImage(logo,
-        (letterRect.left-rect.left)*xScale,(letterRect.top-rect.top)*yScale,
-        letterRect.width*xScale,letterRect.height*yScale);
+      // Render only the exact interactive wordmark, not the hidden SVG fallback.
+      // The CSS hit targets remain in place; mouseover and gayageum sound work.
+      surface.setTransform(xScale,0,0,yScale,0,0);
+      var letters=zones.querySelectorAll('.dpnco-gayageum-zone');
+      if(!letters.length)return false;
+      surface.textAlign='center';
+      surface.textBaseline='alphabetic';
+      var commonBaseline=null;
+      for(var i=0;i<letters.length;i++){
+        var button=letters[i],box=button.getBoundingClientRect(),style=getComputedStyle(button);
+        surface.font=style.fontWeight+' '+style.fontSize+' '+style.fontFamily;
+        surface.fillStyle=style.color;
+        var x=box.left-rect.left+box.width/2;
+        if(commonBaseline===null){
+          var metrics=surface.measureText('d');
+          var ascent=metrics.actualBoundingBoxAscent||parseFloat(style.fontSize)*0.75;
+          var descent=metrics.actualBoundingBoxDescent||0;
+          commonBaseline=box.top-rect.top+(box.height+ascent-descent)/2;
+        }
+        surface.fillText(button.textContent,x,commonBaseline);
+        // The period after the fifth letter is part of our existing CSS logo.
+        if(i===4){
+          surface.font=style.fontWeight+' '+(parseFloat(style.fontSize)*0.8)+'px '+style.fontFamily;
+          surface.fillStyle='#ffffff';
+          surface.fillText('.',box.right-rect.left+parseFloat(style.fontSize)*0.24,commonBaseline);
+        }
+      }
+      surface.setTransform(1,0,0,1,0,0);
       var previousUnit=gl.getParameter(gl.ACTIVE_TEXTURE);
       var previousFlip=gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
       gl.activeTexture(gl.TEXTURE2);
@@ -928,7 +955,8 @@ $('.grid_card.card_4').ripples({
   function setup(){
     var jq=window.jQuery;
     water=jq&&jq(hero).data('ripples');
-    if(!water||!water.context||!water.renderProgram){
+    zones=hero.querySelector('.dpnco-gayageum-zones');
+    if(!water||!water.context||!water.renderProgram||!zones){
       if(++tries<100)setTimeout(setup,100);
       return;
     }
@@ -1020,7 +1048,13 @@ $('.grid_card.card_4').ripples({
       gl.uniform1i(locations.samplerLogo,2);
       // Preserve 01A's original ripple simulation and original render uniforms.
       water.renderProgram={id:program,locations:locations,uniforms:water.renderProgram.uniforms};
-      if(!updateLogo())logo.addEventListener('load',updateLogo,{once:true});
+      updateLogo();
+      // Rebuild the same water texture when a letter is hovered or focused.
+      var refresh=function(){requestAnimationFrame(updateLogo);};
+      ['pointerover','pointerout','focusin','focusout'].forEach(function(type){
+        zones.addEventListener(type,refresh,{passive:true});
+      });
+      if(document.fonts&&document.fonts.ready)document.fonts.ready.then(updateLogo);
       window.addEventListener('resize',function(){
         cancelAnimationFrame(resizeFrame);
         resizeFrame=requestAnimationFrame(updateLogo);
