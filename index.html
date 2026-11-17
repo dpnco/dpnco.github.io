@@ -2,7 +2,7 @@
 <html data-wf-page="6af919b0f80cba9fd54d45e6" data-wf-site="6af919adf80cba9fd54d4597">
 <head>
   <meta charset="utf-8">
-  <title>Interactive JS Ripple Effect</title>
+  <title>DPNCO | Reflection 01A - Subtle Letter Refraction</title>
   <meta content="Interactive JS Ripple Effect" property="og:title">
   <meta content="Interactive JS Ripple Effect" name="twitter:title">
   <meta content="width=device-width, initial-scale=1" name="viewport">
@@ -695,7 +695,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  }
  function paint(){
   pending=false;if(disposed||!ready||!riverImage.complete||!riverImage.naturalWidth||!lastImage.complete||!lastImage.naturalWidth)return;
-  var p=window.scrollY/Math.max(1,window.innerHeight),step=Math.round(p*48),w=Math.min(1400,Math.round(window.innerWidth)),h=Math.round(w*window.innerHeight/window.innerWidth);
+  var p=window.scrollY/Math.max(1,window.innerHeight),step=Math.round(p*48),reflectionScale=window.matchMedia('(max-width:600px)').matches?1.25:1.5,w=Math.min(2048,Math.round(window.innerWidth*reflectionScale)),h=Math.round(w*window.innerHeight/window.innerWidth);
   if(step===lastStep&&w===lastWidth&&h===lastHeight)return;lastStep=step;lastWidth=w;lastHeight=h;
   texture.width=w;texture.height=h;ctx.globalAlpha=1;ctx.filter='none';cover(originalImage);
   ctx.globalAlpha=smooth((p-.05)/.95);cover(riverImage);ctx.globalAlpha=1;
@@ -875,6 +875,158 @@ $('.grid_card.card_4').ripples({
 	dropRadius: 5,
 	perturbance: 0.004,
 });
+</script>
+
+  <!-- Reflection 01 comparison: change specular rim only; original ripple physics remain unc
+  <style id="dpnco-subtle-letter-refraction-style">
+  /* Only replace the logo's pixels after WebGL has the matching texture. */
+  .hero.dpnco-letter-water-ready .dpnco-vector-art { opacity:0!important; }
+  </style>
+<script id="dpnco-reflection-subtle-lettering">
+(function(){
+  'use strict';
+  // 01A white-edge water remains unchanged. The logo is sampled through
+  // the exact same wave normals as the water, with a maximum 1.6px bend.
+  var hero=document.querySelector('.hero');
+  var logo=hero&&hero.querySelector('.dpnco-vector-art');
+  if(!hero||!logo)return;
+  var tries=0,water=null,gl=null,program=null,locations=null,logoTexture=null,resizeFrame=0;
+  var logoSurface=document.createElement('canvas');
+  var surface=logoSurface.getContext('2d',{alpha:true});
+  function updateLogo(){
+    if(!water||!gl||!program||!surface||!logo.complete||!logo.naturalWidth)return false;
+    var rect=hero.getBoundingClientRect();
+    var letterRect=logo.getBoundingClientRect();
+    var w=water.canvas.width,h=water.canvas.height;
+    if(w<1||h<1||rect.width<1||rect.height<1||letterRect.width<1)return false;
+    logoSurface.width=w;logoSurface.height=h;
+    var xScale=w/rect.width,yScale=h/rect.height;
+    surface.clearRect(0,0,w,h);
+    try{
+      surface.drawImage(logo,
+        (letterRect.left-rect.left)*xScale,(letterRect.top-rect.top)*yScale,
+        letterRect.width*xScale,letterRect.height*yScale);
+      var previousUnit=gl.getParameter(gl.ACTIVE_TEXTURE);
+      var previousFlip=gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D,logoTexture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,logoSurface);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,previousFlip);
+      gl.activeTexture(previousUnit);
+      gl.useProgram(program);
+      gl.uniform2f(locations.logoPixel,1.6/w,1.6/h);
+      hero.classList.add('dpnco-letter-water-ready');
+      return true;
+    }catch(e){
+      hero.classList.remove('dpnco-letter-water-ready');
+      console.warn('DPNCO letter refraction kept the original logo:',e);
+      return false;
+    }
+  }
+  function setup(){
+    var jq=window.jQuery;
+    water=jq&&jq(hero).data('ripples');
+    if(!water||!water.context||!water.renderProgram){
+      if(++tries<100)setTimeout(setup,100);
+      return;
+    }
+    gl=water.context;
+    var vertex=[
+      'precision highp float;',
+      'attribute vec2 vertex;',
+      'uniform vec2 topLeft;',
+      'uniform vec2 bottomRight;',
+      'uniform vec2 containerRatio;',
+      'varying vec2 ripplesCoord;',
+      'varying vec2 backgroundCoord;',
+      'varying vec2 logoCoord;',
+      'void main(){',
+      'backgroundCoord=mix(topLeft,bottomRight,vertex*0.5+0.5);',
+      'backgroundCoord.y=1.0-backgroundCoord.y;',
+      'ripplesCoord=vec2(vertex.x,-vertex.y)*containerRatio*0.5+0.5;',
+      'logoCoord=vec2(vertex.x,-vertex.y)*0.5+0.5;',
+      'gl_Position=vec4(vertex.x,-vertex.y,0.0,1.0);',
+      '}'
+    ].join('\n');
+    var fragment=[
+      'precision highp float;',
+      'uniform sampler2D samplerBackground;',
+      'uniform sampler2D samplerRipples;',
+      'uniform sampler2D samplerLogo;',
+      'uniform vec2 delta;',
+      'uniform vec2 logoPixel;',
+      'uniform float perturbance;',
+      'varying vec2 ripplesCoord;',
+      'varying vec2 backgroundCoord;',
+      'varying vec2 logoCoord;',
+      'void main(){',
+      'float height=texture2D(samplerRipples,ripplesCoord).r;',
+      'float heightX=texture2D(samplerRipples,vec2(ripplesCoord.x+delta.x,ripplesCoord.y)).r;',
+      'float heightY=texture2D(samplerRipples,vec2(ripplesCoord.x,ripplesCoord.y+delta.y)).r;',
+      'vec3 dx=vec3(delta.x,heightX-height,0.0);',
+      'vec3 dy=vec3(0.0,heightY-height,delta.y);',
+      'vec2 offset=-normalize(cross(dy,dx)).xz;',
+      'float specular=pow(max(0.0,dot(offset,normalize(vec2(-0.6,1.0)))),4.0);',
+      // Exactly the 01A white-edged water color.
+      'vec4 base=texture2D(samplerBackground,backgroundCoord+offset*perturbance);',
+      'vec3 waterColor=base.rgb+vec3(specular*1.75);',
+      // Logo UV moves only when the real underlying wave normal changes.
+      'vec4 letters=texture2D(samplerLogo,logoCoord+offset*logoPixel);',
+      'gl_FragColor=vec4(mix(waterColor,letters.rgb,letters.a),base.a);',
+      '}'
+    ].join('\n');
+    function compile(type,src){
+      var sh=gl.createShader(type);
+      gl.shaderSource(sh,src);gl.compileShader(sh);
+      if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){
+        var error=gl.getShaderInfoLog(sh);gl.deleteShader(sh);
+        throw new Error(error||'Unable to compile water shader');
+      }
+      return sh;
+    }
+    try{
+      var vs=compile(gl.VERTEX_SHADER,vertex);
+      var fs=compile(gl.FRAGMENT_SHADER,fragment);
+      program=gl.createProgram();
+      gl.attachShader(program,vs);gl.attachShader(program,fs);
+      gl.bindAttribLocation(program,0,'vertex');
+      gl.linkProgram(program);
+      gl.deleteShader(vs);gl.deleteShader(fs);
+      if(!gl.getProgramParameter(program,gl.LINK_STATUS))
+        throw new Error(gl.getProgramInfoLog(program)||'Unable to link shader');
+      locations={};
+      ['topLeft','bottomRight','containerRatio','samplerBackground','samplerRipples','samplerLogo','delta','perturbance','logoPixel'].forEach(function(name){
+        locations[name]=gl.getUniformLocation(program,name);
+        if(locations[name]===null)throw new Error('Missing shader uniform: '+name);
+      });
+      logoTexture=gl.createTexture();
+      var previousUnit=gl.getParameter(gl.ACTIVE_TEXTURE);
+      gl.activeTexture(gl.TEXTURE2);
+      gl.bindTexture(gl.TEXTURE_2D,logoTexture);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,0]));
+      gl.activeTexture(previousUnit);
+      gl.useProgram(program);
+      gl.uniform2fv(locations.delta,water.textureDelta);
+      gl.uniform1i(locations.samplerLogo,2);
+      // Preserve 01A's original ripple simulation and original render uniforms.
+      water.renderProgram={id:program,locations:locations,uniforms:water.renderProgram.uniforms};
+      if(!updateLogo())logo.addEventListener('load',updateLogo,{once:true});
+      window.addEventListener('resize',function(){
+        cancelAnimationFrame(resizeFrame);
+        resizeFrame=requestAnimationFrame(updateLogo);
+      },{passive:true});
+    }catch(e){
+      hero.classList.remove('dpnco-letter-water-ready');
+      console.warn('DPNCO letter refraction could not initialize:',e);
+    }
+  }
+  setup();
+})();
 </script>
 </body>
 </html>
