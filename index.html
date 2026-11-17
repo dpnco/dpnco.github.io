@@ -156,10 +156,12 @@
   }
   async function syncSound(){
    var request=++playRequest;
-   if(disposed||document.documentElement.classList.contains('dpnco-statement-active')||!rainOn||!soundOn){audio.pause();return;}
+   // The frog controls ambient rain sound independently of the statement and visual-rain toggle.
+   if(disposed||!soundOn){audio.pause();return;}
    try{
     await audio.play();
-    if(disposed||request!==playRequest||!rainOn||!soundOn)audio.pause();
+    // An older play promise must not pause a newer ON request.
+    if(disposed||!soundOn)audio.pause();
    }catch(error){
     if(!disposed&&request===playRequest){soundOn=false;labels();}
    }
@@ -384,8 +386,8 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
   };
   var active=[],disposed=false;
   function soundEnabled(){
-   var frog=hero.querySelector('[data-dpnco-sound-toggle]');
-   return !disposed&&!document.documentElement.classList.contains('dpnco-statement-active')&&hero.dataset.dpncoRainOn==='true'&&frog&&frog.getAttribute('aria-pressed')==='true';
+   // Gayageum notes belong to the logo, not the frog or automatic-rain controls.
+   return !disposed&&!document.documentElement.classList.contains('dpnco-statement-active')&&!document.documentElement.classList.contains('dpnco-statement-dismissing');
   }
   function stopAll(){
    active.forEach(function(a){a.pause();a.removeAttribute('src');a.load();});
