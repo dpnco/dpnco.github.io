@@ -482,6 +482,31 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 @media(prefers-reduced-motion:reduce){.hero .dpnco-hero-note{transition:none!important;}}
 @media(max-width:600px){.dpnco-river-contact a{left:18px;bottom:20px;}.dpnco-river-contact .dpnco-statement-shortcut{left:58px;bottom:20px;}}
 @media(prefers-reduced-motion:reduce){.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut{transition:none;}}
+/* Phone-sized layout only; existing desktop rules and interactions are unchanged. */
+@media screen and (max-width:600px){
+ .hero .dpnco-rain-toggle,
+ .hero .dpnco-rain-toggle.dpnco-sound-toggle,
+ .dpnco-river-contact a,
+ .dpnco-river-contact .dpnco-statement-shortcut{
+  box-sizing:border-box!important;
+  position:fixed!important;
+  top:auto!important;
+  bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
+  width:44px!important;
+  height:44px!important;
+  margin:0!important;
+  padding:0!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  line-height:1!important;
+ }
+ .dpnco-river-contact a{left:12px!important;right:auto!important;}
+ .dpnco-river-contact .dpnco-statement-shortcut{left:60px!important;right:auto!important;}
+ .hero .dpnco-rain-toggle.dpnco-sound-toggle{right:60px!important;left:auto!important;}
+ .hero .dpnco-rain-toggle:not(.dpnco-sound-toggle){right:12px!important;left:auto!important;}
+ .dpnco-river-words{font-size:clamp(44px,16vw,88px)!important;max-width:calc(100vw - 24px)!important;}
+}
 </style>
     <script id="dpnco-three-section-controller">
 (function(){
