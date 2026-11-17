@@ -452,11 +452,10 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 .dpnco-continuous-journey,.dpnco-sunrise-generated,.dpnco-journey-sky,.dpnco-journey-storm,.dpnco-journey-sand,.dpnco-journey-rain-canvas,.dpnco-journey-last{display:none!important;}
 .dpnco-river-motto{position:fixed;inset:0;width:100%;height:100svh;pointer-events:none;opacity:1;visibility:visible;}
 .dpnco-river-words{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);width:max-content;max-width:calc(100vw - 40px);margin:0;font:700 clamp(128px,22vw,336px)/1.1 'Helvetica Neue',Arial,sans-serif;letter-spacing:normal;word-spacing:normal;color:#fff;white-space:nowrap;opacity:0;pointer-events:none;}
-.dpnco-river-contact{position:fixed;inset:0;width:100%;height:100svh;pointer-events:none;box-sizing:border-box;opacity:0;visibility:hidden;transition:none;}
-.dpnco-footer-visible .dpnco-river-contact{opacity:1;visibility:visible;transition:opacity 4000ms ease,visibility 0s;}
-.dpnco-river-contact a{opacity:.75;position:absolute;bottom:24px;left:24px;color:#fff;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;text-decoration:none;pointer-events:none;}
+.dpnco-river-contact{position:fixed;inset:0;width:100%;height:100svh;pointer-events:none;box-sizing:border-box;opacity:1;visibility:visible;transition:none;}
+.dpnco-river-contact a{opacity:.3;position:absolute;bottom:24px;left:24px;color:#fff;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;text-decoration:none;pointer-events:auto;transition:opacity 220ms ease,filter 220ms ease;}
 .dpnco-river-contact a svg{display:block;width:28px;height:28px;}
-.dpnco-river-contact a:hover,.dpnco-river-contact a:focus-visible{opacity:1;}
+.dpnco-river-contact a:hover,.dpnco-river-contact a:focus-visible{opacity:1;filter:drop-shadow(0 0 6px rgba(255,255,255,.7));}
 /* Small balanced three-line founder quote beneath the interactive logo. */
 .hero .heading-wrap{position:relative;}
 .hero .dpnco-hero-note{
@@ -480,9 +479,8 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  .hero .dpnco-hero-note-copy span{white-space:normal;}
 }
 @media(prefers-reduced-motion:reduce){.hero .dpnco-hero-note{transition:none!important;}}
-.dpnco-footer-visible .dpnco-river-contact a{pointer-events:auto;}
 @media(max-width:600px){.dpnco-river-contact a{left:18px;bottom:20px;}}
-@media(prefers-reduced-motion:reduce){.dpnco-river-contact,.dpnco-footer-visible .dpnco-river-contact{transition:none;}}
+@media(prefers-reduced-motion:reduce){.dpnco-river-contact a{transition:none;}}
 </style>
     <script id="dpnco-three-section-controller">
 (function(){
@@ -497,38 +495,59 @@ function init(){
  var contact=document.createElement('section');contact.className='dpnco-river-contact';contact.setAttribute('aria-label','Contact DPN Co');var link=document.createElement('a');link.href='mailto:hello@dpnco.co';link.setAttribute('aria-label','Email DPNCO');link.setAttribute('title','Email DPNCO');link.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"/></svg>';contact.appendChild(link);page.appendChild(contact);
 var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
- var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='intro',founderFadeTimer=null;
- // Only the statement is faded here. The frog, gayageum and water stay independent.
- if(founderNote)requestAnimationFrame(function(){
-  requestAnimationFrame(function(){if(!disposed&&founderPhase==='intro')founderNote.classList.add('dpnco-note-visible');});
- });
+ var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='motto',founderFadeTimer=null,founderPauseTimer=null;
+ // The founder note is the final scene after Repeat, never an opening overlay.
+ if(founderNote){
+  founderNote.classList.remove('dpnco-note-visible','dpnco-note-leaving');
+  founderNote.style.visibility='hidden';
+ }
+ function showFounderNote(){
+  if(disposed||founderPhase!=='motto'||!founderNote)return;
+  founderPhase='visible';
+  founderNote.classList.remove('dpnco-note-visible','dpnco-note-leaving');
+  founderNote.style.visibility='visible';
+  // A separate paint allows the existing gentle fade-in to start at zero opacity.
+  requestAnimationFrame(function(){
+   requestAnimationFrame(function(){
+    if(!disposed&&founderPhase==='visible')founderNote.classList.add('dpnco-note-visible');
+   });
+  });
+ }
  function finishFounderFade(){
   if(disposed||founderPhase!=='fading')return;
-  founderPhase='done';
+  founderPhase='pause';
   if(founderNote)founderNote.style.visibility='hidden';
-  requestedWords=mottoWords.length;
-  showRequestedWords();
+  // Begin the next motto cycle one second after the note is fully gone.
+  founderPauseTimer=setTimeout(function(){
+   if(disposed||founderPhase!=='pause')return;
+   founderPhase='motto';
+   resetSequence();
+   requestedWords=mottoWords.length;
+   showRequestedWords();
+  },1000);
  }
  function startFounderFade(){
-  if(disposed||founderPhase!=='intro')return;
+  if(disposed||founderPhase!=='visible')return;
   founderPhase='fading';
-  if(founderNote){founderNote.classList.add('dpnco-note-leaving');founderNote.classList.remove('dpnco-note-visible');}
-  // The motto cannot start until the statement's 2-second fade is over.
+  if(founderNote){
+   founderNote.classList.remove('dpnco-note-visible');
+   founderNote.classList.add('dpnco-note-leaving');
+  }
   founderFadeTimer=setTimeout(finishFounderFade,window.matchMedia('(prefers-reduced-motion:reduce)').matches?0:2150);
  }
- function holdInitialScroll(e){
-  if(disposed||founderPhase==='done')return;
+ function holdStatementScroll(e){
+  if(disposed||founderPhase==='motto')return;
   if(e.type==='wheel'&&(e.ctrlKey||e.metaKey))return;
   if(e.type==='keydown'){
    if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)<0)return;
    if(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]'))return;
   }
   if(e.cancelable)e.preventDefault();
-  startFounderFade();
+  if(founderPhase==='visible')startFounderFade();
  }
- window.addEventListener('wheel',holdInitialScroll,{capture:true,passive:false,signal:signal});
- window.addEventListener('touchmove',holdInitialScroll,{capture:true,passive:false,signal:signal});
- window.addEventListener('keydown',holdInitialScroll,{capture:true,signal:signal});
+ window.addEventListener('wheel',holdStatementScroll,{capture:true,passive:false,signal:signal});
+ window.addEventListener('touchmove',holdStatementScroll,{capture:true,passive:false,signal:signal});
+ window.addEventListener('keydown',holdStatementScroll,{capture:true,signal:signal});
  var positions=[[.77,.22],[.77,.22],[.77,.22],[.77,.22],[.77,.22],[.77,.22]];
  var wordSizes=['clamp(144px,20vw,312px)','clamp(120px,17.6vw,272px)','clamp(176px,26.8vw,400px)','clamp(136px,21.6vw,328px)','clamp(160px,24.4vw,368px)','clamp(128px,19.2vw,296px)'];
  function placeWord(index){
@@ -560,12 +579,13 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   }catch(error){if(disposed||epoch!==sequenceEpoch)return;console.warn('DPNCO motto animation interrupted',error);}
   if(epoch!==sequenceEpoch||disposed)return;
   sequenceRunning=false;update();
+  if(completedWords===mottoWords.length)showFounderNote();
  }
  var lastMottoScrollY=window.scrollY;
  function onMottoScroll(){
   var y=window.scrollY,moved=Math.abs(y-lastMottoScrollY)>.5;lastMottoScrollY=y;
-  if(founderPhase!=='done'){
-   if(moved)startFounderFade();
+  if(founderPhase!=='motto'){
+   if(moved&&founderPhase==='visible')startFounderFade();
    update();
    return;
   }
@@ -615,7 +635,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  riverImage.onload=update;lastImage.onload=update;
  var wait=setInterval(function(){if(disposed)return;if(captureOriginal()){clearInterval(wait);update();}},150);captureOriginal();
  window.addEventListener('scroll',onMottoScroll,{passive:true,signal:signal});window.addEventListener('resize',update,{passive:true,signal:signal});
- window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);clearTimeout(founderFadeTimer);sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
+ window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);clearTimeout(founderFadeTimer);clearTimeout(founderPauseTimer);if(founderNote){founderNote.classList.remove('dpnco-note-visible','dpnco-note-leaving');founderNote.style.visibility='hidden';}sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
  motto.getBoundingClientRect();update();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
