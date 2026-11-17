@@ -670,18 +670,26 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   sequenceRunning=false;update();
   if(completedWords===mottoWords.length)showFounderNote(true);
  }
- var lastMottoScrollY=window.scrollY;
+ // A deliberate scroll gesture starts the motto; incidental movement does not.
+ // The page scroll and water texture still respond normally.
+ var lastMottoScrollY=window.scrollY,accumulatedMottoScroll=0;
  function onMottoScroll(){
-  var y=window.scrollY,moved=Math.abs(y-lastMottoScrollY)>.5;lastMottoScrollY=y;
-  // The final statement is held until scroll and has its own fade and one-second pause.
+  var y=window.scrollY,delta=y-lastMottoScrollY,moved=Math.abs(delta)>.5;
+  lastMottoScrollY=y;
+  // Scrolls made while the motto plays must not queue an accidental restart.
+  if(sequenceRunning)accumulatedMottoScroll=0;
+  else accumulatedMottoScroll+=delta;
+  var triggerDistance=window.matchMedia('(max-width:600px)').matches?130:110;
+  var deliberateScroll=Math.abs(accumulatedMottoScroll)>=triggerDistance;
+  if(deliberateScroll)accumulatedMottoScroll=0;
+  // Leave the existing founder-statement dismissal interaction unchanged.
   if(founderIsFinal){
    if(moved&&founderPhase==='visible')startFounderFade();
    update();
    return;
   }
-  // A manually opened note can fade away, but the motto animation continues untouched.
   if(moved&&founderPhase==='visible')startFounderFade();
-  if(moved&&!disposed&&!sequenceRunning){resetSequence();requestedWords=mottoWords.length;showRequestedWords();}
+  if(deliberateScroll&&!disposed&&!sequenceRunning){resetSequence();requestedWords=mottoWords.length;showRequestedWords();}
   update();
  }
  var originalUrl=null,originalImage=null,riverImage=new Image(),lastImage=new Image(),texture=document.createElement('canvas'),ctx=texture.getContext('2d'),lastStep=-1,lastWidth=0,lastHeight=0,ready=false,pending=false,waterRestored=false;
