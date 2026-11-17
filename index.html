@@ -462,10 +462,10 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 .hero .dpnco-hero-note{
  position:absolute;top:calc(100% + clamp(30px,4.5vh,52px));left:50%;
  transform:translateX(-50%);width:max-content;max-width:94vw;
- pointer-events:none;opacity:0;animation:dpnco-hero-note-appear 1800ms ease 650ms forwards;
+ pointer-events:none;opacity:0;transition:opacity 3600ms ease-in-out;
 }
 .hero .dpnco-hero-note-copy{
- margin:0;color:#f7f6f2;font:italic 400 clamp(9px,1.1vw,16px)/1.55 Georgia,'Times New Roman',serif;
+ margin:0;color:#f7f6f2;font:italic 400 clamp(12.6px,1.54vw,22.4px)/1.55 Georgia,'Times New Roman',serif;
  letter-spacing:.004em;text-align:left;text-shadow:none;
 }
 .hero .dpnco-hero-note-copy span{display:block;white-space:nowrap;}
@@ -473,8 +473,13 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  margin:10px 0 0;color:#f7f6f2;font:italic 400 clamp(9px,.95vw,13px)/1.5 Georgia,'Times New Roman',serif;
  text-align:left;text-shadow:none;
 }
-@keyframes dpnco-hero-note-appear{to{opacity:1;}}
-@media(prefers-reduced-motion:reduce){.hero .dpnco-hero-note{opacity:1;animation:none;}}
+.hero .dpnco-hero-note.dpnco-note-visible{opacity:1;}
+.hero .dpnco-hero-note.dpnco-note-leaving{opacity:0;transition-duration:2000ms;}
+@media(max-width:600px){
+ .hero .dpnco-hero-note{width:calc(100vw - 36px);max-width:calc(100vw - 36px);}
+ .hero .dpnco-hero-note-copy span{white-space:normal;}
+}
+@media(prefers-reduced-motion:reduce){.hero .dpnco-hero-note{transition:none!important;}}
 .dpnco-footer-visible .dpnco-river-contact a{pointer-events:auto;}
 @media(max-width:600px){.dpnco-river-contact a{left:18px;bottom:20px;}}
 @media(prefers-reduced-motion:reduce){.dpnco-river-contact,.dpnco-footer-visible .dpnco-river-contact{transition:none;}}
@@ -492,6 +497,38 @@ function init(){
  var contact=document.createElement('section');contact.className='dpnco-river-contact';contact.setAttribute('aria-label','Contact DPN Co');var link=document.createElement('a');link.href='mailto:hello@dpnco.co';link.setAttribute('aria-label','Email DPNCO');link.setAttribute('title','Email DPNCO');link.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"/></svg>';contact.appendChild(link);page.appendChild(contact);
 var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
+ var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='intro',founderFadeTimer=null;
+ // Only the statement is faded here. The frog, gayageum and water stay independent.
+ if(founderNote)requestAnimationFrame(function(){
+  requestAnimationFrame(function(){if(!disposed&&founderPhase==='intro')founderNote.classList.add('dpnco-note-visible');});
+ });
+ function finishFounderFade(){
+  if(disposed||founderPhase!=='fading')return;
+  founderPhase='done';
+  if(founderNote)founderNote.style.visibility='hidden';
+  requestedWords=mottoWords.length;
+  showRequestedWords();
+ }
+ function startFounderFade(){
+  if(disposed||founderPhase!=='intro')return;
+  founderPhase='fading';
+  if(founderNote){founderNote.classList.add('dpnco-note-leaving');founderNote.classList.remove('dpnco-note-visible');}
+  // The motto cannot start until the statement's 2-second fade is over.
+  founderFadeTimer=setTimeout(finishFounderFade,window.matchMedia('(prefers-reduced-motion:reduce)').matches?0:2150);
+ }
+ function holdInitialScroll(e){
+  if(disposed||founderPhase==='done')return;
+  if(e.type==='wheel'&&(e.ctrlKey||e.metaKey))return;
+  if(e.type==='keydown'){
+   if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)<0)return;
+   if(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]'))return;
+  }
+  if(e.cancelable)e.preventDefault();
+  startFounderFade();
+ }
+ window.addEventListener('wheel',holdInitialScroll,{capture:true,passive:false,signal:signal});
+ window.addEventListener('touchmove',holdInitialScroll,{capture:true,passive:false,signal:signal});
+ window.addEventListener('keydown',holdInitialScroll,{capture:true,signal:signal});
  var positions=[[.77,.22],[.77,.22],[.77,.22],[.77,.22],[.77,.22],[.77,.22]];
  var wordSizes=['clamp(144px,20vw,312px)','clamp(120px,17.6vw,272px)','clamp(176px,26.8vw,400px)','clamp(136px,21.6vw,328px)','clamp(160px,24.4vw,368px)','clamp(128px,19.2vw,296px)'];
  function placeWord(index){
@@ -527,6 +564,11 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var lastMottoScrollY=window.scrollY;
  function onMottoScroll(){
   var y=window.scrollY,moved=Math.abs(y-lastMottoScrollY)>.5;lastMottoScrollY=y;
+  if(founderPhase!=='done'){
+   if(moved)startFounderFade();
+   update();
+   return;
+  }
   if(moved&&!disposed&&!sequenceRunning){resetSequence();requestedWords=mottoWords.length;showRequestedWords();}
   update();
  }
@@ -573,7 +615,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  riverImage.onload=update;lastImage.onload=update;
  var wait=setInterval(function(){if(disposed)return;if(captureOriginal()){clearInterval(wait);update();}},150);captureOriginal();
  window.addEventListener('scroll',onMottoScroll,{passive:true,signal:signal});window.addEventListener('resize',update,{passive:true,signal:signal});
- window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
+ window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);clearTimeout(founderFadeTimer);sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
  motto.getBoundingClientRect();update();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
