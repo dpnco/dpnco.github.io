@@ -503,7 +503,7 @@ function init(){
  contact.appendChild(statementButton);page.appendChild(contact);
 var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
- var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='motto',founderFadeTimer=null,founderPauseTimer=null,founderIdleTimer=null;
+ var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='motto',founderFadeTimer=null,founderPauseTimer=null,founderIdleTimer=null,founderIsFinal=false;
  // The founder note is the final scene after Repeat, never an opening overlay.
  if(founderNote){
   founderNote.classList.remove('dpnco-note-visible','dpnco-note-leaving');
@@ -511,14 +511,18 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  }
  function scheduleFounderIdle(){
   clearTimeout(founderIdleTimer);
-  if(!disposed&&founderPhase==='visible')founderIdleTimer=setTimeout(startFounderFade,30000);
+  // The 30-second timeout applies to a manual preview, not the final scene after Repeat.
+  if(!disposed&&!founderIsFinal&&founderPhase==='visible')founderIdleTimer=setTimeout(startFounderFade,30000);
  }
- function showFounderNote(){
+ function showFounderNote(afterRepeat){
   if(disposed||!founderNote)return;
-  if(founderPhase==='motto'){
-   resetSequence();
-  }else{
-   clearTimeout(founderFadeTimer);clearTimeout(founderPauseTimer);clearTimeout(founderIdleTimer);
+  if(afterRepeat)founderIsFinal=true;
+  clearTimeout(founderFadeTimer);clearTimeout(founderPauseTimer);clearTimeout(founderIdleTimer);
+  // When the note is already showing, Repeat simply makes it the final scene.
+  // Do not restart the fade, the motto, or the sound effects.
+  if(founderPhase==='visible'){
+   if(!founderIsFinal)scheduleFounderIdle();
+   return;
   }
   founderPhase='visible';
   statementButton.setAttribute('aria-pressed','true');
@@ -534,11 +538,14 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  }
  function finishFounderFade(){
   if(disposed||founderPhase!=='fading')return;
-  founderPhase='pause';
   if(founderNote)founderNote.style.visibility='hidden';
-  // Begin the next motto cycle one second after the note is fully gone.
+  // Closing a manual preview never stops or restarts a playing motto.
+  if(!founderIsFinal){founderPhase='motto';return;}
+  founderPhase='pause';
+  // Only the completed Repeat -> statement scene loops to the next motto.
   founderPauseTimer=setTimeout(function(){
    if(disposed||founderPhase!=='pause')return;
+   founderIsFinal=false;
    founderPhase='motto';
    resetSequence();
    requestedWords=mottoWords.length;
@@ -561,13 +568,14 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   e.preventDefault();e.stopPropagation();
   if(disposed)return;
   if(founderPhase==='visible')startFounderFade();
-  else if(founderPhase==='motto'||founderPhase==='fading'||founderPhase==='pause')showFounderNote();
+  else if(founderPhase==='motto'||founderPhase==='fading'||founderPhase==='pause')showFounderNote(false);
  },{signal:signal});
  ['pointermove','pointerdown'].forEach(function(type){
   window.addEventListener(type,function(){if(founderPhase==='visible')scheduleFounderIdle();},{passive:true,signal:signal});
  });
  function holdStatementScroll(e){
-  if(disposed||founderPhase==='motto')return;
+  // Manual previews do not intercept scrolling or pause the motto.
+  if(disposed||!founderIsFinal||founderPhase==='motto')return;
   if(e.type==='wheel'&&(e.ctrlKey||e.metaKey))return;
   if(e.type==='keydown'){
    if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)<0)return;
@@ -610,16 +618,19 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   }catch(error){if(disposed||epoch!==sequenceEpoch)return;console.warn('DPNCO motto animation interrupted',error);}
   if(epoch!==sequenceEpoch||disposed)return;
   sequenceRunning=false;update();
-  if(completedWords===mottoWords.length)showFounderNote();
+  if(completedWords===mottoWords.length)showFounderNote(true);
  }
  var lastMottoScrollY=window.scrollY;
  function onMottoScroll(){
   var y=window.scrollY,moved=Math.abs(y-lastMottoScrollY)>.5;lastMottoScrollY=y;
-  if(founderPhase!=='motto'){
+  // The final statement is held until scroll and has its own fade and one-second pause.
+  if(founderIsFinal){
    if(moved&&founderPhase==='visible')startFounderFade();
    update();
    return;
   }
+  // A manually opened note can fade away, but the motto animation continues untouched.
+  if(moved&&founderPhase==='visible')startFounderFade();
   if(moved&&!disposed&&!sequenceRunning){resetSequence();requestedWords=mottoWords.length;showRequestedWords();}
   update();
  }
