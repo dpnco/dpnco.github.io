@@ -31,7 +31,7 @@
       <p data-dpnco-corner="bottom-left" class="dpnco-corner dpnco-corner-bl"></p>
       <p data-dpnco-corner="bottom-right" class="dpnco-corner dpnco-corner-br"></p>
     </div>
-    <a type="button" aria-label="Turn automatic rain off" aria-pressed="true" data-dpnco-rain-toggle="true" href="#" class="dpnco-rain-toggle w-button"><img class="dpnco-rain-cloud-icon" src="favicon.png?v=20261117-approved" alt="" aria-hidden="true" draggable="false"></a>
+    <a type="button" aria-label="Turn automatic rain off" aria-pressed="true" data-dpnco-rain-toggle="true" href="#" class="dpnco-rain-toggle w-button"><img class="dpnco-rain-cloud-icon" src="images/rain-cloud-white-only.png?v=20261117a" alt="" aria-hidden="true" draggable="false"></a>
     <a class="dpnco-rain-toggle dpnco-sound-toggle w-button" href="#" aria-label="Turn gentle water sounds on" data-dpnco-sound-toggle="true" role="button" title="Water sound off" type="button" tabindex="0" aria-pressed="false">♪</a>
     <div class="hide">
       <a href="https://commons.wikimedia.org/wiki/File:Sound_of_light_rainfall.ogg" title="Sound of light rainfall — Mijesty, 2023. Converted to MP3; otherwise unmodified." rel="noopener noreferrer" class="dpnco-audio-credit-link">Rain: Mijesty</a><span>·</span>
@@ -142,7 +142,7 @@
    soundButton=hero.querySelector('[data-dpnco-sound-toggle]');
    hero.dataset.dpncoRainOn=String(rainOn);
    if(rainButton){
-    rainButton.innerHTML="<img class=\"dpnco-rain-cloud-icon\" src=\"favicon.png?v=20261117-approved\" alt=\"\" aria-hidden=\"true\" draggable=\"false\">";rainButton.style.opacity='1';
+    rainButton.innerHTML="<img class=\"dpnco-rain-cloud-icon\" src=\"images/rain-cloud-white-only.png?v=20261117a\" alt=\"\" aria-hidden=\"true\" draggable=\"false\">";rainButton.style.opacity='1';
     rainButton.setAttribute('aria-pressed',String(rainOn));
     rainButton.setAttribute('aria-label',rainOn?'Turn automatic rain off':'Turn automatic rain on');
     rainButton.setAttribute('title',rainOn?'Rain on':'Rain off');
