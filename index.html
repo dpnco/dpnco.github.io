@@ -156,7 +156,7 @@
   }
   async function syncSound(){
    var request=++playRequest;
-   if(disposed||!rainOn||!soundOn){audio.pause();return;}
+   if(disposed||document.documentElement.classList.contains('dpnco-statement-active')||!rainOn||!soundOn){audio.pause();return;}
    try{
     await audio.play();
     if(disposed||request!==playRequest||!rainOn||!soundOn)audio.pause();
@@ -279,6 +279,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
   }
   function animate(now){
    if(disposed)return;
+   if(window.dpncoStatementLock){stop();return;}
    var dt=last?clamp(now-last,1,48):16.67;last=now;
    var maxScroll=limit();
    target=clamp(target,0,maxScroll);
@@ -384,7 +385,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
   var active=[],disposed=false;
   function soundEnabled(){
    var frog=hero.querySelector('[data-dpnco-sound-toggle]');
-   return !disposed&&hero.dataset.dpncoRainOn==='true'&&frog&&frog.getAttribute('aria-pressed')==='true';
+   return !disposed&&!document.documentElement.classList.contains('dpnco-statement-active')&&hero.dataset.dpncoRainOn==='true'&&frog&&frog.getAttribute('aria-pressed')==='true';
   }
   function stopAll(){
    active.forEach(function(a){a.pause();a.removeAttribute('src');a.load();});
@@ -426,7 +427,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
   }
   hero.addEventListener('click',turnOffIfNeeded,{capture:true,signal:signal});
   hero.addEventListener('keydown',turnOffIfNeeded,{capture:true,signal:signal});
-  window.dpncoGayageumNotes={dispose:function(){disposed=true;events.abort();stopAll();zones.remove();logo.classList.remove('dpnco-wordmark-ready');}};
+  window.dpncoGayageumNotes={suspend:stopAll,dispose:function(){disposed=true;events.abort();stopAll();zones.remove();logo.classList.remove('dpnco-wordmark-ready');}};
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initGayageum,{once:true});
  else initGayageum();
@@ -447,8 +448,6 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 .dpnco-river-contact{position:fixed;inset:0;width:100%;height:100svh;pointer-events:none;box-sizing:border-box;opacity:0;visibility:hidden;transition:none;}
 .dpnco-footer-visible .dpnco-river-contact{opacity:1;visibility:visible;transition:opacity 4000ms ease,visibility 0s;}
 .dpnco-river-contact a{opacity:.75;position:absolute;bottom:24px;left:24px;color:#fff;font:400 clamp(15.6px,1.43vw,19.5px)/1.4 Georgia,'Times New Roman',serif;text-decoration:none;pointer-events:none;}
-.dpnco-river-contact-phrase{position:absolute;top:calc(82px + 0.125in);left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 40px);margin:0;text-align:center;color:#fff;opacity:.75;transition:opacity 500ms ease;font:300 clamp(22.27758px,2.0421115vw,27.846975px)/1.4 'Times New Roman',Times,serif;}
-.dpnco-river-contact-phrase.is-expired{opacity:0;}
 /* Founder statement — deliberately separate from the existing water/ripple effect. */
 .dpnco-founder-statement{
  position:fixed;inset:0;z-index:1100;display:flex;flex-direction:column;
@@ -456,7 +455,7 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  padding:clamp(32px,7vw,88px);gap:clamp(22px,4vh,42px);
  width:100%;height:100svh;text-align:center;color:#fff!important;
  opacity:0;visibility:hidden;pointer-events:none;
- transition:opacity 1100ms ease,visibility 0s linear 1100ms;
+ transition:opacity 2300ms ease,visibility 0s linear 2300ms;
 }
 .dpnco-founder-statement-copy{
  width:100%;max-width:990px;margin:0;color:#fff!important;
@@ -469,13 +468,14 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  letter-spacing:.035em;
 }
 .dpnco-statement-active .dpnco-founder-statement{
- opacity:1;visibility:visible;transition:opacity 1100ms ease,visibility 0s;
+ opacity:1;visibility:visible;transition:opacity 2300ms ease 300ms,visibility 0s;
 }
 .dpnco-statement-dismissing .dpnco-founder-statement{
  opacity:0;visibility:visible;transition:opacity 1000ms ease-in-out;
 }
+.hero .dpnco-vector-logo{transition:opacity 2300ms ease!important;}
 .dpnco-statement-active .hero .dpnco-vector-logo{
- opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+ opacity:0!important;pointer-events:none!important;
 }
 .dpnco-statement-active .hero [data-dpnco-sound-toggle]{
  opacity:0!important;visibility:hidden!important;pointer-events:none!important;
@@ -489,7 +489,7 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  .dpnco-statement-dismissing .dpnco-founder-statement{transition:none;}
 }
 .dpnco-footer-visible .dpnco-river-contact a{pointer-events:auto;}
-@media(max-width:600px){.dpnco-river-contact a{left:18px;bottom:20px;}.dpnco-river-contact-phrase{top:calc(76px + 0.125in);}}
+@media(max-width:600px){.dpnco-river-contact a{left:18px;bottom:20px;}}
 @media(prefers-reduced-motion:reduce){.dpnco-river-contact,.dpnco-footer-visible .dpnco-river-contact{transition:none;}}
 </style>
     <script id="dpnco-three-section-controller">
@@ -502,7 +502,7 @@ function init(){
  var events=new AbortController(),signal=events.signal,disposed=false;
  var motto=document.createElement('section');motto.className='dpnco-river-motto';motto.setAttribute('aria-label','Imagine. Create. Make. Inspire. Give. Repeat.');
  var wordsWrap=document.createElement('p');wordsWrap.className='dpnco-river-words';wordsWrap.textContent='';wordsWrap.setAttribute('aria-hidden','true');motto.appendChild(wordsWrap);page.appendChild(motto);
- var contact=document.createElement('section');contact.className='dpnco-river-contact';contact.setAttribute('aria-label','Contact DPN Co');var phrase=document.createElement('p');phrase.className='dpnco-river-contact-phrase';phrase.textContent='Something good happens here.';var link=document.createElement('a');link.href='mailto:hello@dpnco.co';link.textContent='hello@dpnco.co';contact.appendChild(phrase);contact.appendChild(link);page.appendChild(contact);
+ var contact=document.createElement('section');contact.className='dpnco-river-contact';contact.setAttribute('aria-label','Contact DPN Co');var link=document.createElement('a');link.href='mailto:hello@dpnco.co';link.textContent='hello@dpnco.co';contact.appendChild(link);page.appendChild(contact);
  var statement=document.createElement('section');statement.className='dpnco-founder-statement';
  statement.setAttribute('aria-label','Statement by Denny Park, Founder, DPNCO');
  var statementCopy=document.createElement('p');statementCopy.className='dpnco-founder-statement-copy';
@@ -510,13 +510,15 @@ function init(){
  var statementSignature=document.createElement('p');statementSignature.className='dpnco-founder-statement-signature';
  statementSignature.textContent='— Denny Park, Founder, DPNCO';
  statement.appendChild(statementCopy);statement.appendChild(statementSignature);page.appendChild(statement);
- var closingTimer=null,statementShowTimer=null,statementDismissTimer=null,statementState='idle',soundWasPlaying=false,lockedScrollY=0;
+ var statementDismissTimer=null,statementState='idle',soundWasPlaying=false,lockedScrollY=0;
  function currentSound(){return window.dpncoWaterController&&window.dpncoWaterController.audio;}
  function showStatement(){
   if(disposed||statementState!=='idle'||!page.classList.contains('dpnco-footer-visible'))return;
   statementState='visible';lockedScrollY=window.scrollY;
+  window.dpncoStatementLock=true;
   var audio=currentSound();soundWasPlaying=!!(audio&&!audio.paused);
   if(audio)audio.pause();
+  if(window.dpncoGayageumNotes&&window.dpncoGayageumNotes.suspend)window.dpncoGayageumNotes.suspend();
   document.documentElement.classList.add('dpnco-statement-active');
  }
  function dismissStatement(){
@@ -525,6 +527,7 @@ function init(){
   statementDismissTimer=setTimeout(function(){
    if(disposed)return;
    document.documentElement.classList.remove('dpnco-statement-active','dpnco-statement-dismissing');
+   window.dpncoStatementLock=false;
    statementState='done';
    var audio=currentSound(),frog=hero.querySelector('[data-dpnco-sound-toggle]');
    if(soundWasPlaying&&audio&&frog&&frog.getAttribute('aria-pressed')==='true'&&hero.dataset.dpncoRainOn==='true'){
@@ -545,12 +548,7 @@ function init(){
   if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].indexOf(e.key)<0)return;
   holdScrollGesture(e);
  },{capture:true,signal:signal});
- function armClosingTimer(){
-  if(disposed||closingTimer!==null||!page.classList.contains('dpnco-footer-visible'))return;
-  closingTimer=setTimeout(function(){if(!disposed){phrase.classList.add('is-expired');statementShowTimer=setTimeout(showStatement,520);}},2500);
- }
- contact.addEventListener('transitionend',function(e){if(e.target===contact&&e.propertyName==='opacity'&&parseFloat(getComputedStyle(contact).opacity)>=.999)armClosingTimer();},{signal:signal});
- var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
+  var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
  var positions=[[.77,.22],[.77,.22],[.77,.22],[.77,.22],[.77,.22],[.77,.22]];
  var wordSizes=['clamp(144px,20vw,312px)','clamp(120px,17.6vw,272px)','clamp(176px,26.8vw,400px)','clamp(136px,21.6vw,328px)','clamp(160px,24.4vw,368px)','clamp(128px,19.2vw,296px)'];
@@ -562,12 +560,11 @@ function init(){
   wordsWrap.style.left=x+'px';wordsWrap.style.top=y+'px';
  }
  function resetSequence(){
-  clearTimeout(statementShowTimer);statementShowTimer=null;clearTimeout(statementDismissTimer);statementDismissTimer=null;
+  clearTimeout(statementDismissTimer);statementDismissTimer=null;
   if(statementState!=='idle'){
    document.documentElement.classList.remove('dpnco-statement-active','dpnco-statement-dismissing');
-   statementState='idle';soundWasPlaying=false;
+   statementState='idle';soundWasPlaying=false;window.dpncoStatementLock=false;
   }
-  clearTimeout(closingTimer);closingTimer=null;phrase.classList.add('is-expired');
   sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();wordAnimation=null;
   completedWords=0;requestedWords=0;sequenceRunning=false;wordsWrap.style.opacity='0';wordsWrap.textContent='';
   page.classList.remove('dpnco-footer-visible');
@@ -588,7 +585,6 @@ function init(){
    }
   }catch(error){if(disposed||epoch!==sequenceEpoch)return;console.warn('DPNCO motto animation interrupted',error);}
   if(epoch!==sequenceEpoch||disposed)return;
-  if(completedWords===mottoWords.length)phrase.classList.remove('is-expired');
   sequenceRunning=false;update();
  }
  var lastMottoScrollY=window.scrollY;
@@ -639,13 +635,13 @@ function init(){
  function update(){
   if(disposed)return;
   page.classList.toggle('dpnco-footer-visible',completedWords===6&&!sequenceRunning);
-  if(completedWords===6&&!sequenceRunning&&window.matchMedia('(prefers-reduced-motion:reduce)').matches)armClosingTimer();
+  if(completedWords===6&&!sequenceRunning&&statementState==='idle')showStatement();
   if(!pending){pending=true;requestAnimationFrame(paint);}
  }
  riverImage.onload=update;lastImage.onload=update;
  var wait=setInterval(function(){if(disposed)return;if(captureOriginal()){clearInterval(wait);update();}},150);captureOriginal();
  window.addEventListener('scroll',onMottoScroll,{passive:true,signal:signal});window.addEventListener('resize',update,{passive:true,signal:signal});
- window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);clearTimeout(closingTimer);clearTimeout(statementShowTimer);clearTimeout(statementDismissTimer);document.documentElement.classList.remove('dpnco-statement-active','dpnco-statement-dismissing');statement.remove();sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
+ window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);clearTimeout(statementDismissTimer);window.dpncoStatementLock=false;document.documentElement.classList.remove('dpnco-statement-active','dpnco-statement-dismissing');statement.remove();sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
  motto.getBoundingClientRect();update();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
