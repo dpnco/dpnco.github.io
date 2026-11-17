@@ -23,6 +23,10 @@
     <div class="page-inner">
       <div class="heading-wrap">
         <div class="dpnco-vector-logo"><img src="images/dpnco-pure-white-wordmark.svg" loading="lazy" alt="DPN Co" class="dpnco-vector-art"></div>
+        <div class="dpnco-hero-note" aria-label="A statement from Denny Park, Founder">
+          <p class="dpnco-hero-note-copy"><span>“We are a creative company that begins where the map ends.</span><span>We explore ideas, products, research, partnerships, and new ventures,</span><span>not by following a fixed path, but by finding one.”</span></p>
+          <p class="dpnco-hero-note-signature">— Denny Park, Founder</p>
+        </div>
       </div>
     </div>
     <div class="dpnco-reveal-corners">
@@ -453,63 +457,24 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 .dpnco-river-contact a{opacity:.75;position:absolute;bottom:24px;left:24px;color:#fff;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;text-decoration:none;pointer-events:none;}
 .dpnco-river-contact a svg{display:block;width:28px;height:28px;}
 .dpnco-river-contact a:hover,.dpnco-river-contact a:focus-visible{opacity:1;}
-/* Founder statement — deliberately separate from the existing water/ripple effect. */
-.dpnco-founder-statement{
- position:fixed;inset:0;z-index:1100;display:flex;flex-direction:column;
- align-items:center;justify-content:center;box-sizing:border-box;
- padding:clamp(32px,7vw,88px);gap:clamp(22px,4vh,42px);
- width:100%;height:100svh;text-align:center;color:#fff!important;
- opacity:0;visibility:hidden;pointer-events:none;
- transition:opacity 2300ms ease,visibility 0s linear 2300ms;
+/* Small balanced three-line founder quote beneath the interactive logo. */
+.hero .heading-wrap{position:relative;}
+.hero .dpnco-hero-note{
+ position:absolute;top:calc(100% + clamp(30px,4.5vh,52px));left:50%;
+ transform:translateX(-50%);width:max-content;max-width:94vw;
+ pointer-events:none;opacity:0;animation:dpnco-hero-note-appear 1800ms ease 650ms forwards;
 }
-.dpnco-founder-statement-copy{
- box-sizing:border-box;width:39vw;max-width:calc(100vw - 48px);
- margin:0 auto;color:#f7f6f2!important;text-align:left!important;
- font-family:Georgia,'Times New Roman',serif!important;
- font-size:clamp(26px,1.82vw,33.8px)!important;font-weight:400!important;
- font-style:normal!important;line-height:1.5!important;
- letter-spacing:.005em;text-shadow:none!important;
+.hero .dpnco-hero-note-copy{
+ margin:0;color:#f7f6f2;font:italic 400 clamp(9px,1.1vw,16px)/1.55 Georgia,'Times New Roman',serif;
+ letter-spacing:.004em;text-align:left;text-shadow:none;
 }
-.dpnco-founder-statement-signature{
- box-sizing:border-box;width:33.333vw;max-width:calc(100vw - 48px);
- margin:0 auto;color:#f7f6f2!important;opacity:.96;text-align:left!important;
- font-family:Georgia,'Times New Roman',serif!important;
- font-size:clamp(17px,1.14vw,21px)!important;font-weight:400!important;
- font-style:normal!important;line-height:1.45!important;letter-spacing:.035em;text-shadow:none!important;
+.hero .dpnco-hero-note-copy span{display:block;white-space:nowrap;}
+.hero .dpnco-hero-note-signature{
+ margin:10px 0 0;color:#f7f6f2;font:italic 400 clamp(9px,.95vw,13px)/1.5 Georgia,'Times New Roman',serif;
+ text-align:left;text-shadow:none;
 }
-.dpnco-statement-active .dpnco-founder-statement{
- opacity:1;visibility:visible;transition:opacity 2300ms ease 300ms,visibility 0s;
-}
-.dpnco-statement-dismissing .dpnco-founder-statement{
- opacity:0;visibility:visible;transition:opacity 1000ms ease-in-out;
-}
-.hero .dpnco-vector-logo{transition:opacity 2300ms ease!important;}
-.dpnco-statement-active .hero .dpnco-vector-logo{
- opacity:0!important;pointer-events:none!important;
-}
-/* Keep the invisible musical keyboard noninteractive while the statement covers it. */
-.dpnco-statement-active .hero .dpnco-gayageum-zones,
-.dpnco-statement-active .hero .dpnco-gayageum-zone{
- pointer-events:none!important;
-}
-.dpnco-statement-active .hero .dpnco-rain-toggle.dpnco-sound-toggle{
- display:flex!important;visibility:visible!important;opacity:1!important;
- pointer-events:auto!important;z-index:1205!important;right:68px!important;
-}
-.dpnco-statement-active .hero .dpnco-zen-frog-img{
- display:block!important;visibility:visible!important;
- filter:drop-shadow(0 1px 2px rgba(31,59,65,.55))!important;
-}
-@media(max-width:600px){
- .dpnco-founder-statement{padding:28px 25px;gap:24px;}
- .dpnco-founder-statement-copy{width:calc(100vw - 56px);max-width:480px;font-size:clamp(26px,6.63vw,29.9px)!important;line-height:1.46!important;}
- .dpnco-founder-statement-signature{width:calc(100vw - 56px);max-width:480px;}
-}
-@media(prefers-reduced-motion:reduce){
- .dpnco-founder-statement{transition:none;}
- .dpnco-statement-dismissing .dpnco-founder-statement{transition:none;}
- .dpnco-founder-statement-copy,.dpnco-founder-statement-signature{animation:none!important;}
-}
+@keyframes dpnco-hero-note-appear{to{opacity:1;}}
+@media(prefers-reduced-motion:reduce){.hero .dpnco-hero-note{opacity:1;animation:none;}}
 .dpnco-footer-visible .dpnco-river-contact a{pointer-events:auto;}
 @media(max-width:600px){.dpnco-river-contact a{left:18px;bottom:20px;}}
 @media(prefers-reduced-motion:reduce){.dpnco-river-contact,.dpnco-footer-visible .dpnco-river-contact{transition:none;}}
@@ -525,47 +490,7 @@ function init(){
  var motto=document.createElement('section');motto.className='dpnco-river-motto';motto.setAttribute('aria-label','Imagine. Create. Make. Inspire. Give. Repeat.');
  var wordsWrap=document.createElement('p');wordsWrap.className='dpnco-river-words';wordsWrap.textContent='';wordsWrap.setAttribute('aria-hidden','true');motto.appendChild(wordsWrap);page.appendChild(motto);
  var contact=document.createElement('section');contact.className='dpnco-river-contact';contact.setAttribute('aria-label','Contact DPN Co');var link=document.createElement('a');link.href='mailto:hello@dpnco.co';link.setAttribute('aria-label','Email DPNCO');link.setAttribute('title','Email DPNCO');link.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"/></svg>';contact.appendChild(link);page.appendChild(contact);
- var statement=document.createElement('section');statement.className='dpnco-founder-statement';
- statement.setAttribute('aria-label','Statement by Denny Park, Founder, DPNCO');
- var statementCopy=document.createElement('p');statementCopy.className='dpnco-founder-statement-copy';
- statementCopy.textContent="We are an independent creative company that begins where the map ends. We explore ideas, products, research, partnerships, and new ventures, not by following a fixed path, but by finding one.";
- var statementSignature=document.createElement('p');statementSignature.className='dpnco-founder-statement-signature';
- statementSignature.textContent='— Denny Park, Founder, DPNCO';
- statement.appendChild(statementCopy);statement.appendChild(statementSignature);page.appendChild(statement);
- var statementDismissTimer=null,statementState='idle',soundWasPlaying=false,lockedScrollY=0;
- function currentSound(){return window.dpncoWaterController&&window.dpncoWaterController.audio;}
- function showStatement(){
-  if(disposed||statementState!=='idle'||!page.classList.contains('dpnco-footer-visible'))return;
-  statementState='visible';lockedScrollY=window.scrollY;
-  window.dpncoStatementLock=true;
-  // Leave frog-controlled ambient water sound alone; stop only the logo's instrument notes.
-  if(window.dpncoGayageumNotes&&window.dpncoGayageumNotes.suspend)window.dpncoGayageumNotes.suspend();
-  document.documentElement.classList.add('dpnco-statement-active');
- }
- function dismissStatement(){
-  if(disposed||statementState!=='visible')return;
-  statementState='dismissing';document.documentElement.classList.add('dpnco-statement-dismissing');
-  statementDismissTimer=setTimeout(function(){
-   if(disposed)return;
-   document.documentElement.classList.remove('dpnco-statement-active','dpnco-statement-dismissing');
-   window.dpncoStatementLock=false;
-   statementState='done';
-   lastMottoScrollY=window.scrollY;
-  },window.matchMedia('(prefers-reduced-motion:reduce)').matches?0:1000);
- }
- function holdScrollGesture(e){
-  if(statementState!=='visible'&&statementState!=='dismissing')return;
-  if(e.cancelable)e.preventDefault();
-  e.stopImmediatePropagation();
-  if(statementState==='visible')dismissStatement();
- }
- window.addEventListener('wheel',function(e){if(e.ctrlKey||e.metaKey)return;holdScrollGesture(e);},{capture:true,passive:false,signal:signal});
- window.addEventListener('touchmove',holdScrollGesture,{capture:true,passive:false,signal:signal});
- window.addEventListener('keydown',function(e){
-  if(['ArrowDown','ArrowUp','PageDown','PageUp','Home','End',' '].indexOf(e.key)<0)return;
-  holdScrollGesture(e);
- },{capture:true,signal:signal});
-  var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
+var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
  var positions=[[.77,.22],[.77,.22],[.77,.22],[.77,.22],[.77,.22],[.77,.22]];
  var wordSizes=['clamp(144px,20vw,312px)','clamp(120px,17.6vw,272px)','clamp(176px,26.8vw,400px)','clamp(136px,21.6vw,328px)','clamp(160px,24.4vw,368px)','clamp(128px,19.2vw,296px)'];
@@ -577,11 +502,6 @@ function init(){
   wordsWrap.style.left=x+'px';wordsWrap.style.top=y+'px';
  }
  function resetSequence(){
-  clearTimeout(statementDismissTimer);statementDismissTimer=null;
-  if(statementState!=='idle'){
-   document.documentElement.classList.remove('dpnco-statement-active','dpnco-statement-dismissing');
-   statementState='idle';soundWasPlaying=false;window.dpncoStatementLock=false;
-  }
   sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();wordAnimation=null;
   completedWords=0;requestedWords=0;sequenceRunning=false;wordsWrap.style.opacity='0';wordsWrap.textContent='';
   page.classList.remove('dpnco-footer-visible');
@@ -606,10 +526,6 @@ function init(){
  }
  var lastMottoScrollY=window.scrollY;
  function onMottoScroll(){
-  if(statementState==='visible'||statementState==='dismissing'){
-   if(Math.abs(window.scrollY-lockedScrollY)>1)window.scrollTo(0,lockedScrollY);
-   lastMottoScrollY=lockedScrollY;return;
-  }
   var y=window.scrollY,moved=Math.abs(y-lastMottoScrollY)>.5;lastMottoScrollY=y;
   if(moved&&!disposed&&!sequenceRunning){resetSequence();requestedWords=mottoWords.length;showRequestedWords();}
   update();
@@ -652,13 +568,12 @@ function init(){
  function update(){
   if(disposed)return;
   page.classList.toggle('dpnco-footer-visible',completedWords===6&&!sequenceRunning);
-  if(completedWords===6&&!sequenceRunning&&statementState==='idle')showStatement();
   if(!pending){pending=true;requestAnimationFrame(paint);}
  }
  riverImage.onload=update;lastImage.onload=update;
  var wait=setInterval(function(){if(disposed)return;if(captureOriginal()){clearInterval(wait);update();}},150);captureOriginal();
  window.addEventListener('scroll',onMottoScroll,{passive:true,signal:signal});window.addEventListener('resize',update,{passive:true,signal:signal});
- window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);clearTimeout(statementDismissTimer);window.dpncoStatementLock=false;document.documentElement.classList.remove('dpnco-statement-active','dpnco-statement-dismissing');statement.remove();sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
+ window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
  motto.getBoundingClientRect();update();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
