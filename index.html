@@ -132,7 +132,7 @@
    if(window.jQuery&&window.jQuery.fn.ripples&&window.jQuery(hero).data('ripples')){
     var water=window.jQuery(hero);
     water.ripples('set','perturbance',0.004);
-    water.ripples('set','dropRadius',15);
+    water.ripples('set','dropRadius',11);
     // Original template mouse movement and clicking; cloud controls automatic rain only.
     water.ripples('set','interactive',true);
     water.ripples('show');water.ripples('play');
@@ -187,7 +187,7 @@
     var water=window.jQuery(hero);
     if(water.data('ripples')){
      var point=position(),r=hero.getBoundingClientRect();
-     water.ripples('play');water.ripples('drop',r.width*point.x,r.height*point.y,18,0.055);
+     water.ripples('play');water.ripples('drop',r.width*point.x,r.height*point.y,14,0.055);
     }
    }
    timer=setTimeout(drop,document.hidden?1000:200);hero.dpncoRainTimer=timer;
@@ -851,8 +851,8 @@ buttonStaggerAnimation()
   <script src="https://cdn.jsdelivr.net/npm/jquery.ripples@0.6.3/dist/jquery.ripples.min.js"></script>
   <script>
 $('.hero').ripples({
-	resolution: 512,
-	dropRadius: 15,
+	resolution: window.matchMedia('(max-width:600px)').matches ? 640 : 768,
+	dropRadius: 11,
 	perturbance: 0.004,
 });
 $('.grid_card.card_1').ripples({
