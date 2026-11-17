@@ -447,7 +447,9 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 .dpnco-river-words{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);width:max-content;max-width:calc(100vw - 40px);margin:0;font:700 clamp(128px,22vw,336px)/1.1 'Helvetica Neue',Arial,sans-serif;letter-spacing:normal;word-spacing:normal;color:#fff;white-space:nowrap;opacity:0;pointer-events:none;}
 .dpnco-river-contact{position:fixed;inset:0;width:100%;height:100svh;pointer-events:none;box-sizing:border-box;opacity:0;visibility:hidden;transition:none;}
 .dpnco-footer-visible .dpnco-river-contact{opacity:1;visibility:visible;transition:opacity 4000ms ease,visibility 0s;}
-.dpnco-river-contact a{opacity:.75;position:absolute;bottom:24px;left:24px;color:#fff;font:400 clamp(15.6px,1.43vw,19.5px)/1.4 Georgia,'Times New Roman',serif;text-decoration:none;pointer-events:none;}
+.dpnco-river-contact a{opacity:.75;position:absolute;bottom:24px;left:24px;color:#fff;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;text-decoration:none;pointer-events:none;}
+.dpnco-river-contact a svg{display:block;width:28px;height:28px;}
+.dpnco-river-contact a:hover,.dpnco-river-contact a:focus-visible{opacity:1;}
 /* Founder statement — deliberately separate from the existing water/ripple effect. */
 .dpnco-founder-statement{
  position:fixed;inset:0;z-index:1100;display:flex;flex-direction:column;
@@ -458,7 +460,7 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  transition:opacity 2300ms ease,visibility 0s linear 2300ms;
 }
 .dpnco-founder-statement-copy{
- box-sizing:border-box;width:min(34vw,620px);max-width:calc(100vw - 48px);
+ box-sizing:border-box;width:33.333vw;max-width:calc(100vw - 48px);
  margin:0 auto;color:#fff!important;text-align:center;
  font:400 clamp(19px,1.25vw,24px)/1.58 Georgia,'Times New Roman',serif;
  letter-spacing:.005em;text-shadow:0 1px 12px rgba(29,45,51,.15);
@@ -506,7 +508,7 @@ function init(){
  var events=new AbortController(),signal=events.signal,disposed=false;
  var motto=document.createElement('section');motto.className='dpnco-river-motto';motto.setAttribute('aria-label','Imagine. Create. Make. Inspire. Give. Repeat.');
  var wordsWrap=document.createElement('p');wordsWrap.className='dpnco-river-words';wordsWrap.textContent='';wordsWrap.setAttribute('aria-hidden','true');motto.appendChild(wordsWrap);page.appendChild(motto);
- var contact=document.createElement('section');contact.className='dpnco-river-contact';contact.setAttribute('aria-label','Contact DPN Co');var link=document.createElement('a');link.href='mailto:hello@dpnco.co';link.textContent='hello@dpnco.co';contact.appendChild(link);page.appendChild(contact);
+ var contact=document.createElement('section');contact.className='dpnco-river-contact';contact.setAttribute('aria-label','Contact DPN Co');var link=document.createElement('a');link.href='mailto:hello@dpnco.co';link.setAttribute('aria-label','Email DPNCO');link.setAttribute('title','Email DPNCO');link.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a2 2 0 0 1-2.06 0L2 7"/></svg>';contact.appendChild(link);page.appendChild(contact);
  var statement=document.createElement('section');statement.className='dpnco-founder-statement';
  statement.setAttribute('aria-label','Statement by Denny Park, Founder, DPNCO');
  var statementCopy=document.createElement('p');statementCopy.className='dpnco-founder-statement-copy';
