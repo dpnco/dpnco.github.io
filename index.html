@@ -680,7 +680,8 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
     await wordAnimation.finished;
     if(disposed||epoch!==sequenceEpoch)return;
     wordAnimation.cancel();wordAnimation=null;wordsWrap.style.opacity='0';completedWords++;
-    // Start the next motto immediately after the previous 6-second fade cycle.
+    // One full second of blank screen between motto words on desktop and mobile.
+    if(completedWords<requestedWords)await new Promise(function(resolve){setTimeout(resolve,1000);});
    }
   }catch(error){if(disposed||epoch!==sequenceEpoch)return;console.warn('DPNCO motto animation interrupted',error);}
   if(epoch!==sequenceEpoch||disposed)return;
