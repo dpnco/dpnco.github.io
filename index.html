@@ -2,7 +2,7 @@
 <html data-wf-page="6af919b0f80cba9fd54d45e6" data-wf-site="6af919adf80cba9fd54d4597">
 <head>
   <meta charset="utf-8">
-  <title>DPNCO | Reflection 01A - Subtle Letter Refraction</title>
+  <title>Reflection of Soyang River | DPNCO</title>
   <meta content="Interactive JS Ripple Effect" property="og:title">
   <meta content="Interactive JS Ripple Effect" name="twitter:title">
   <meta content="width=device-width, initial-scale=1" name="viewport">
@@ -190,6 +190,15 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
   audio.style.display='none';audio.src="https://cdn.freesound.org/previews/693/693699_5392691-lq.mp3";
   audio.loop=true;audio.preload='auto';audio.volume=0.85;
   hero.appendChild(audio);audio.load();hero.dpncoRainRecording=audio;
+  if('mediaSession' in navigator && 'MediaMetadata' in window){
+   try{
+    navigator.mediaSession.metadata=new MediaMetadata({
+     title:'Reflection of Soyang River',
+     artist:'DPNCO',
+     artwork:[{src:new URL('images/rain-cloud-white-only.png?v=20261117a',document.baseURI).href,type:'image/png'}]
+    });
+   }catch(e){}
+  }
   function applyRainState(){
    hero.setAttribute('data-dpnco-rain-state',rainOn?'on':'off');
    if(disposed)return;
