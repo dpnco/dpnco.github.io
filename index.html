@@ -656,6 +656,14 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
     wordsWrap.style.fontSize=fontSize+'px';
    }
   }
+  // Portrait phone only: oversized centered motto may overlap the logo and middle section.
+  // Landscape and desktop retain their existing size and positioning.
+  if(window.matchMedia('(max-width:600px) and (orientation:portrait)').matches){
+   wordsWrap.style.fontSize='clamp(112px,34vw,160px)';
+   wordsWrap.style.left='50%';
+   wordsWrap.style.top='43%';
+   return;
+  }
   box=wordsWrap.getBoundingClientRect();
   var minX=box.width/2+pad,maxX=window.innerWidth-box.width/2-pad;
   var minY=box.height/2+pad,maxY=window.innerHeight-box.height/2-pad;
