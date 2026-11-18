@@ -32,6 +32,11 @@ body.dpnco-controls-visible .dpnco-river-contact .dpnco-statement-shortcut {
  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
 }
 .dpnco-river-contact {z-index:1001!important;}
+/* Keep controls above the water canvas and the second-page overlay. */
+.hero {z-index:4!important;}
+.hero .dpnco-rain-toggle {z-index:1002!important;}
+.dpnco-river-contact {pointer-events:none!important;}
+.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut {z-index:1003!important;}
 .hero .dpnco-vector-logo:not(.dpnco-wordmark-ready) .dpnco-vector-art {visibility:hidden!important;}
 </style>
 </head>
@@ -1173,6 +1178,7 @@ $('.grid_card.card_4').ripples({
   window.addEventListener('touchstart',reveal,{capture:true,passive:true});
   window.addEventListener('pointerdown',reveal,{capture:true,passive:true});
   window.addEventListener('click',reveal,{capture:true,passive:true});
+  window.addEventListener('touchmove',reveal,{capture:true,passive:true});
   window.addEventListener('pointermove',function(e){
    if(e.pointerType==='touch')return;
    var now=Date.now();if(now-lastMouse<100)return;
