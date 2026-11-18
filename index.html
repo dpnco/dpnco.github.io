@@ -773,6 +773,12 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  // A deliberate scroll gesture starts the motto; incidental movement does not.
  // The page scroll and water texture still respond normally.
  var lastMottoScrollY=window.scrollY,accumulatedMottoScroll=0;
+ var userScrollGesture=false;
+ window.addEventListener('wheel',function(e){if(!e.ctrlKey&&!e.metaKey)userScrollGesture=true;},{passive:true,signal:signal});
+ window.addEventListener('touchmove',function(){userScrollGesture=true;},{passive:true,signal:signal});
+ window.addEventListener('keydown',function(e){
+  if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)>=0)userScrollGesture=true;
+ },{signal:signal});
  function onMottoScroll(){
   var y=window.scrollY,delta=y-lastMottoScrollY,moved=Math.abs(delta)>.5;
   lastMottoScrollY=y;
@@ -789,7 +795,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
    return;
   }
   if(moved&&founderPhase==='visible')startFounderFade();
-  if(deliberateScroll&&!disposed&&!sequenceRunning){resetSequence();requestedWords=mottoWords.length;showRequestedWords();}
+  if(deliberateScroll&&userScrollGesture&&!disposed&&!sequenceRunning){userScrollGesture=false;resetSequence();requestedWords=mottoWords.length;showRequestedWords();}
   update();
  }
  var originalUrl=null,originalImage=null,riverImage=new Image(),lastImage=new Image(),texture=document.createElement('canvas'),ctx=texture.getContext('2d'),lastStep=-1,lastWidth=0,lastHeight=0,ready=false,pending=false,waterRestored=false;
@@ -1152,6 +1158,15 @@ body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
 .dpnco-river-contact a,
 .dpnco-river-contact .dpnco-statement-shortcut {
  transition:opacity 250ms ease,filter 180ms ease!important;
+}
+/* Force all four controls to obey the same state, including the frog's own !important opacity. */
+body.dpnco-controls-idle .hero .dpnco-rain-toggle,
+body.dpnco-controls-idle .hero .dpnco-rain-toggle.dpnco-sound-toggle,
+body.dpnco-controls-idle .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"],
+body.dpnco-controls-idle .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"],
+body.dpnco-controls-idle .dpnco-river-contact a,
+body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
+ opacity:0!important;pointer-events:none!important;
 }
 /* Explicit visible state overrides older Webflow and sound-button opacity rules. */
 body.dpnco-controls-visible .hero .dpnco-rain-toggle,
