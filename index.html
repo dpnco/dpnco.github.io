@@ -1354,5 +1354,18 @@ body.dpnco-controls-restored .hero .dpnco-river-contact [data-dpnco-sound-toggle
  }
 }
 </style>
+<style id="dpnco-mobile-native-scroll">
+/* Allow native vertical swipes on the water and noninteractive overlays.
+   Keep the four controls tappable without modifying their appearance. */
+@media (hover:none) and (pointer:coarse){
+ html,body.body-black{overflow-y:auto!important;touch-action:pan-y pinch-zoom!important;}
+ .hero,.hero > canvas,.dpnco-second-page,.dpnco-continuous-journey,
+ .dpnco-river-contact,.dpnco-fixed-water{touch-action:pan-y pinch-zoom!important;}
+ .hero .dpnco-river-contact a,.hero .dpnco-river-contact button,
+ .hero [data-dpnco-rain-toggle],.hero [data-dpnco-sound-toggle]{
+  touch-action:manipulation!important;
+ }
+}
+</style>
 </body>
 </html>
