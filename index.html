@@ -18,11 +18,16 @@
   <link href="favicon.png?v=20261117-approved" rel="icon" type="image/png">
   <link href="favicon.png?v=20261117-approved" rel="apple-touch-icon">
   <style id="dpnco-first-paint-visibility">
-/* Single source of truth: controls start hidden and reveal only on interaction. */
-body:not(.dpnco-controls-visible) .hero .dpnco-rain-toggle,
-body:not(.dpnco-controls-visible) .hero .dpnco-rain-toggle[aria-pressed],
-body:not(.dpnco-controls-visible) .dpnco-river-contact a,
-body:not(.dpnco-controls-visible) .dpnco-river-contact .dpnco-statement-shortcut {
+/* Controls restored to always visible until the next editing session. */
+body.dpnco-controls-restored .hero .dpnco-rain-toggle,
+body.dpnco-controls-restored .hero .dpnco-rain-toggle[aria-pressed],
+body.dpnco-controls-restored .dpnco-river-contact a,
+body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {opacity:1!important;visibility:visible!important;pointer-events:auto!important;}
+
+body:not(.dpnco-controls-visible):not(.dpnco-controls-restored) .hero .dpnco-rain-toggle,
+body:not(.dpnco-controls-visible):not(.dpnco-controls-restored) .hero .dpnco-rain-toggle[aria-pressed],
+body:not(.dpnco-controls-visible):not(.dpnco-controls-restored) .dpnco-river-contact a,
+body:not(.dpnco-controls-visible):not(.dpnco-controls-restored) .dpnco-river-contact .dpnco-statement-shortcut {
  opacity:0!important;pointer-events:none!important;
 }
 body.dpnco-controls-visible .hero .dpnco-rain-toggle,
@@ -40,7 +45,7 @@ body.dpnco-controls-visible .dpnco-river-contact .dpnco-statement-shortcut {
 .hero .dpnco-vector-logo:not(.dpnco-wordmark-ready) .dpnco-vector-art {visibility:hidden!important;}
 </style>
 </head>
-<body class="body-black">
+<body class="body-black dpnco-controls-restored">
   <section class="hero">
     <div class="page-inner">
       <div class="heading-wrap">
