@@ -61,6 +61,25 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
  opacity:1!important;visibility:visible!important;pointer-events:auto!important;
  touch-action:manipulation!important;
 }
+/* iPhone landscape: align all four existing controls on one horizontal baseline. */
+@media screen and (orientation:landscape) and (max-height:600px) {
+ body.dpnco-controls-restored .hero [data-dpnco-rain-toggle],
+ body.dpnco-controls-restored .hero [data-dpnco-sound-toggle],
+ body.dpnco-controls-restored .dpnco-river-contact a,
+ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
+  position:fixed!important;
+  top:auto!important;
+  bottom:max(14px,env(safe-area-inset-bottom))!important;
+  width:36px!important;height:36px!important;
+  margin:0!important;padding:0!important;
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  box-sizing:border-box!important;
+ }
+ body.dpnco-controls-restored .dpnco-river-contact a {left:max(16px,env(safe-area-inset-left))!important;right:auto!important;}
+ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {left:max(62px,calc(env(safe-area-inset-left) + 46px))!important;right:auto!important;}
+ body.dpnco-controls-restored .hero [data-dpnco-sound-toggle] {right:max(62px,calc(env(safe-area-inset-right) + 46px))!important;left:auto!important;}
+ body.dpnco-controls-restored .hero [data-dpnco-rain-toggle] {right:max(16px,env(safe-area-inset-right))!important;left:auto!important;}
+}
 </style>
 </head>
 <body class="body-black dpnco-controls-restored">
