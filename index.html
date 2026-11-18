@@ -393,32 +393,43 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
    G4:'https://cdn.freesound.org/previews/24/24573_164315-lq.mp3',
    A4:'https://cdn.freesound.org/previews/24/24553_164315-lq.mp3'
   };
-  var active=[],disposed=false;
+  var disposed=false;
+  // Prepare one reusable audio element for each recorded note on page load.
+  var players={};
+  Object.keys(sources).forEach(function(pitch){
+   var audio=new Audio();
+   audio.preload='auto';
+   audio.src=sources[pitch];
+   audio.volume=.416;
+   audio.load();
+   players[pitch]=audio;
+  });
   function soundEnabled(){
-   // Gayageum notes belong to the logo, not the frog or automatic-rain controls.
    return !disposed&&!document.documentElement.classList.contains('dpnco-statement-active')&&!document.documentElement.classList.contains('dpnco-statement-dismissing');
   }
   function stopAll(){
-   active.forEach(function(a){a.pause();a.removeAttribute('src');a.load();});
-   active.length=0;
+   Object.keys(players).forEach(function(pitch){
+    var audio=players[pitch];
+    audio.pause();
+    try{audio.currentTime=0;}catch(e){}
+   });
   }
   function playNote(pitch){
    if(!soundEnabled())return;
-   var src=sources[pitch];if(!src)return;
-   var player=new Audio(src);player.preload='auto';player.volume=.416;
-   active.push(player);
-   function release(){
-    var i=active.indexOf(player);
-    if(i>=0)active.splice(i,1);
-    player.removeAttribute('src');
-    player.load();
-   }
-   player.addEventListener('ended',release,{once:true});
-   player.addEventListener('error',release,{once:true});
-   var promise=player.play();
-   if(promise&&promise.catch)promise.catch(function(){release();});
+   var audio=players[pitch];if(!audio)return;
+   audio.pause();
+   try{audio.currentTime=0;}catch(e){}
+   var promise=audio.play();
+   if(promise&&promise.catch)promise.catch(function(error){
+    if(error.name!=='AbortError')console.warn('Gayageum playback:',error);
+   });
   }
-  var zones=document.createElement('div');
+  function disposePlayers(){
+   Object.keys(players).forEach(function(pitch){
+    var audio=players[pitch];audio.pause();audio.removeAttribute('src');audio.load();
+   });
+  }
+    var zones=document.createElement('div');
   zones.className='dpnco-gayageum-zones';
   zones.setAttribute('role','group');
   zones.setAttribute('aria-label','dpnco.co, seven real gayageum notes; the period is silent');
@@ -438,7 +449,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
   }
   hero.addEventListener('click',turnOffIfNeeded,{capture:true,signal:signal});
   hero.addEventListener('keydown',turnOffIfNeeded,{capture:true,signal:signal});
-  window.dpncoGayageumNotes={suspend:stopAll,dispose:function(){disposed=true;events.abort();stopAll();zones.remove();logo.classList.remove('dpnco-wordmark-ready');}};
+  window.dpncoGayageumNotes={suspend:stopAll,dispose:function(){disposed=true;events.abort();stopAll();disposePlayers();zones.remove();logo.classList.remove('dpnco-wordmark-ready');}};
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initGayageum,{once:true});
  else initGayageum();
