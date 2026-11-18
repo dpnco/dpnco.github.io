@@ -43,6 +43,24 @@ body.dpnco-controls-visible .dpnco-river-contact .dpnco-statement-shortcut {
 .dpnco-river-contact {pointer-events:none!important;}
 .dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut {z-index:1003!important;}
 .hero .dpnco-vector-logo:not(.dpnco-wordmark-ready) .dpnco-vector-art {visibility:hidden!important;}
+/* Restore the four original controls on mobile and desktop, independently of scrolling. */
+body.dpnco-controls-restored .hero [data-dpnco-rain-toggle],
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle] {
+ display:flex!important;position:fixed!important;bottom:max(24px,env(safe-area-inset-bottom))!important;
+ z-index:2147483000!important;opacity:1!important;visibility:visible!important;
+ pointer-events:auto!important;touch-action:manipulation!important;
+}
+body.dpnco-controls-restored .dpnco-river-contact {
+ position:fixed!important;inset:0!important;z-index:2147482999!important;
+ pointer-events:none!important;visibility:visible!important;opacity:1!important;
+}
+body.dpnco-controls-restored .dpnco-river-contact a,
+body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
+ display:inline-flex!important;position:absolute!important;
+ bottom:max(24px,env(safe-area-inset-bottom))!important;
+ opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+ touch-action:manipulation!important;
+}
 </style>
 </head>
 <body class="body-black dpnco-controls-restored">
@@ -644,7 +662,7 @@ function init(){
  statementButton.setAttribute('aria-pressed','false');
  statementButton.setAttribute('title','Founder statement');
  statementButton.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>';
- contact.appendChild(statementButton);page.appendChild(contact);
+ contact.appendChild(statementButton);document.body.appendChild(contact);
 var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
  var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='motto',founderFadeTimer=null,founderPauseTimer=null,founderIdleTimer=null,founderIsFinal=false;
