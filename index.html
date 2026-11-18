@@ -2,9 +2,9 @@
 <html data-wf-page="6af919b0f80cba9fd54d45e6" data-wf-site="6af919adf80cba9fd54d4597">
 <head>
   <meta charset="utf-8">
-  <title>Reflection of Soyang River | DPNCO</title>
-  <meta content="Interactive JS Ripple Effect" property="og:title">
-  <meta content="Interactive JS Ripple Effect" name="twitter:title">
+  <title>DP&Co | A Creative Company</title>
+  <meta content="DP&Co | A Creative Company" property="og:title">
+  <meta content="DP&Co | A Creative Company" name="twitter:title">
   <meta content="width=device-width, initial-scale=1" name="viewport">
   <meta content="Webflow" name="generator">
   <link href="css/normalize.css" rel="stylesheet" type="text/css">
@@ -762,7 +762,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
    if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].indexOf(e.key)<0)return;
    if(e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable="true"]'))return;
   }
-  if(e.cancelable)e.preventDefault();
+  if(e.type!=='touchmove'&&e.cancelable)e.preventDefault();
   if(founderPhase==='visible')startFounderFade();
  }
  window.addEventListener('wheel',holdStatementScroll,{capture:true,passive:false,signal:signal});
@@ -1306,6 +1306,27 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut.dpnc
 .hero .dpnco-nature-leaf-img {display:block;width:28px;height:28px;position:relative;z-index:1;pointer-events:none;}
 body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="false"] {opacity:.30!important;filter:blur(.45px)!important;}
 body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="true"] {opacity:1!important;filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 0 9px rgba(255,255,255,.55))!important;}
+</style>
+<style id="dpnco-four-controls-shared-baseline">
+/* One viewport-based baseline for the four controls, including during scrolling. */
+body.dpnco-controls-restored .hero [data-dpnco-rain-toggle],
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle],
+body.dpnco-controls-restored .hero .dpnco-river-contact a,
+body.dpnco-controls-restored .hero .dpnco-river-contact .dpnco-statement-shortcut {
+ position:fixed!important;
+ top:auto!important;
+ bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
+ margin:0!important;
+ box-sizing:border-box!important;
+}
+@media screen and (orientation:landscape) and (max-height:600px){
+ body.dpnco-controls-restored .hero [data-dpnco-rain-toggle],
+ body.dpnco-controls-restored .hero [data-dpnco-sound-toggle],
+ body.dpnco-controls-restored .hero .dpnco-river-contact a,
+ body.dpnco-controls-restored .hero .dpnco-river-contact .dpnco-statement-shortcut {
+  bottom:max(14px,env(safe-area-inset-bottom))!important;
+ }
+}
 </style>
 </body>
 </html>
