@@ -1367,5 +1367,37 @@ body.dpnco-controls-restored .hero .dpnco-river-contact [data-dpnco-sound-toggle
  }
 }
 </style>
+<script id="dpnco-mobile-swipe-scroll-fallback">
+/* The fixed WebGL hero can swallow native swipe scrolling in iOS Chrome.
+   On a vertical one-finger drag over the water, move the real document;
+   scroll listeners (including the motto) still receive normal scroll events. */
+(function(){
+ var startY=0,lastY=0,startX=0,tracking=false,manual=false;
+ function isControl(target){
+  return !!(target&&target.closest&&target.closest('a,button,input,textarea,select,.dpnco-gayageum-zone'));
+ }
+ document.addEventListener('touchstart',function(e){
+  tracking=false;manual=false;
+  if(e.touches.length!==1||isControl(e.target))return;
+  var hero=document.querySelector('.hero');
+  if(!hero||!hero.contains(e.target))return;
+  startY=lastY=e.touches[0].clientY;startX=e.touches[0].clientX;tracking=true;
+ },{passive:true});
+ document.addEventListener('touchmove',function(e){
+  if(!tracking||e.touches.length!==1)return;
+  var t=e.touches[0],dy=t.clientY-lastY,overallY=t.clientY-startY,overallX=t.clientX-startX;
+  if(!manual){
+   if(Math.abs(overallY)<8||Math.abs(overallY)<Math.abs(overallX)*1.2)return;
+   manual=true;
+  }
+  if(e.cancelable)e.preventDefault();
+  window.scrollBy(0,-dy);
+  lastY=t.clientY;
+ },{passive:false});
+ function end(){tracking=false;manual=false;}
+ document.addEventListener('touchend',end,{passive:true});
+ document.addEventListener('touchcancel',end,{passive:true});
+})();
+</script>
 </body>
 </html>
