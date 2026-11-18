@@ -1181,26 +1181,38 @@ body.dpnco-controls-visible .dpnco-river-contact .dpnco-statement-shortcut {
 <script id="dpnco-auto-hide-controls">
 (function(){
  var timer=null,lastMouse=0;
+ var selector='.hero .dpnco-rain-toggle,.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut';
+ function setControls(visible){
+  document.body.classList.toggle('dpnco-controls-visible',visible);
+  document.body.classList.toggle('dpnco-controls-idle',!visible);
+  document.querySelectorAll(selector).forEach(function(el){
+   // Inline important styles override all old Webflow state and sound-button CSS.
+   el.style.setProperty('opacity',visible?'1':'0','important');
+   el.style.setProperty('pointer-events',visible?'auto':'none','important');
+   el.style.setProperty('visibility','visible','important');
+  });
+ }
  function reveal(){
-  document.body.classList.remove('dpnco-controls-idle');
-  document.body.classList.add('dpnco-controls-visible');
+  setControls(true);
   clearTimeout(timer);
-  timer=setTimeout(function(){
-   document.body.classList.remove('dpnco-controls-visible');
-   document.body.classList.add('dpnco-controls-idle');
-  },3000);
+  timer=setTimeout(function(){setControls(false);},3000);
  }
  function init(){
-  document.body.classList.remove('dpnco-controls-visible');
-  document.body.classList.add('dpnco-controls-idle');
+  setControls(false);
   window.addEventListener('pointerdown',reveal,{passive:true,capture:true});
   window.addEventListener('touchstart',reveal,{passive:true,capture:true});
   window.addEventListener('touchend',reveal,{passive:true,capture:true});
-  document.addEventListener('pointermove',function(e){
+  window.addEventListener('click',reveal,{capture:true});
+  window.addEventListener('pointermove',function(e){
    if(e.pointerType==='touch')return;
    var now=Date.now();if(now-lastMouse<100)return;lastMouse=now;reveal();
   },{passive:true});
-  document.addEventListener('keydown',reveal);
+  window.addEventListener('keydown',reveal);
+  // The contact controls are created later by the motto controller.
+  var observer=new MutationObserver(function(){
+   if(document.body.classList.contains('dpnco-controls-idle'))setControls(false);
+  });
+  observer.observe(document.body,{childList:true,subtree:true});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
