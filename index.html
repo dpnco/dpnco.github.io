@@ -216,7 +216,7 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
     rainButton.setAttribute('title',rainOn?'Rain on':'Rain off');
    }
    if(soundButton){
-    if(!soundButton.querySelector('.dpnco-zen-frog-img'))soundButton.innerHTML="<img class=\"dpnco-zen-frog-img\" src=\"data:image/png;base64,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\" alt=\"\" aria-hidden=\"true\" draggable=\"false\">";soundButton.style.opacity='1';
+    if(!soundButton.querySelector('.dpnco-nature-leaf-img'))soundButton.innerHTML="<svg class=\"dpnco-nature-leaf-img\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M6 25C6 13 15 6 27 5c-.5 13-7.5 22-19 22\" stroke=\"white\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M7 26c6-8 12-13 20-21\" stroke=\"white\" stroke-width=\"1.35\" stroke-linecap=\"round\"/></svg>";soundButton.style.opacity='1';
     soundButton.setAttribute('aria-pressed',String(soundOn));
     soundButton.setAttribute('aria-label',soundOn?'Turn soft rain sound off':'Turn soft rain sound on');
     soundButton.setAttribute('title',soundOn?'Soft rain sound on':'Soft rain sound off');
@@ -224,7 +224,7 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
   }
   async function syncSound(){
    var request=++playRequest;
-   // The frog controls ambient rain sound independently of the statement and visual-rain toggle.
+   // The leaf controls ambient rain sound independently of the statement and visual-rain toggle.
    if(disposed||!soundOn){audio.pause();return;}
    try{
     await audio.play();
@@ -321,12 +321,12 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
  background:radial-gradient(circle,rgba(255,255,255,.31) 0%,rgba(241,247,255,.18) 34%,rgba(255,255,255,.055) 58%,transparent 78%);
  filter:blur(4px);opacity:.78;transition:opacity 240ms ease,transform 240ms ease;
 }
-.hero .dpnco-zen-frog-img {display:block;position:relative;z-index:1;width:28px;height:28px;object-fit:contain;pointer-events:none;transition:filter 200ms ease;}
+.hero .dpnco-nature-leaf-img {display:block;position:relative;z-index:1;width:28px;height:28px;object-fit:contain;pointer-events:none;transition:filter 200ms ease;}
 .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"] {opacity:.88!important;filter:none!important;}
-.hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"] .dpnco-zen-frog-img {filter:none!important;}
+.hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"] .dpnco-nature-leaf-img {filter:none!important;}
 .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"]::before {opacity:.72;}
 .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"] {opacity:1!important;filter:drop-shadow(0 0 3px rgba(255,255,255,.75)) drop-shadow(0 0 7px rgba(241,247,255,.32))!important;}
-.hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"] .dpnco-zen-frog-img {filter:none!important;}
+.hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"] .dpnco-nature-leaf-img {filter:none!important;}
 .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"]::before {opacity:1;}
 @media(prefers-reduced-motion:reduce){.hero .dpnco-rain-toggle.dpnco-sound-toggle::before {transition:none;}}
 @media(prefers-reduced-motion:reduce){
@@ -1294,5 +1294,10 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut.dpnc
 })();
 </script>
 
+<style id="dpnco-nature-leaf-toggle">
+.hero .dpnco-nature-leaf-img {display:block;width:28px;height:28px;position:relative;z-index:1;pointer-events:none;}
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="false"] {opacity:.30!important;filter:blur(.45px)!important;}
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="true"] {opacity:1!important;filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 0 9px rgba(255,255,255,.55))!important;}
+</style>
 </body>
 </html>
