@@ -689,7 +689,7 @@ function init(){
  statementButton.setAttribute('aria-pressed','false');
  statementButton.setAttribute('title','Founder statement');
  statementButton.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>';
- contact.appendChild(statementButton);hero.appendChild(contact);
+ contact.appendChild(statementButton);hero.appendChild(contact);contact.appendChild(hero.querySelector('[data-dpnco-sound-toggle]'));contact.appendChild(hero.querySelector('[data-dpnco-rain-toggle]'));
 var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
  var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='motto',founderFadeTimer=null,founderPauseTimer=null,founderIdleTimer=null,founderIsFinal=false;
@@ -1324,6 +1324,32 @@ body.dpnco-controls-restored .hero .dpnco-river-contact .dpnco-statement-shortcu
  body.dpnco-controls-restored .hero [data-dpnco-sound-toggle],
  body.dpnco-controls-restored .hero .dpnco-river-contact a,
  body.dpnco-controls-restored .hero .dpnco-river-contact .dpnco-statement-shortcut {
+  bottom:max(14px,env(safe-area-inset-bottom))!important;
+ }
+}
+</style>
+<style id="dpnco-single-controls-coordinate-system">
+/* All four controls share one fixed overlay and one absolute bottom baseline.
+   This avoids iOS Safari's differing fixed-position containing blocks. */
+body.dpnco-controls-restored .hero .dpnco-river-contact {
+ position:fixed!important;
+ inset:0!important;
+ width:100%!important;
+ height:100dvh!important;
+}
+body.dpnco-controls-restored .hero .dpnco-river-contact a,
+body.dpnco-controls-restored .hero .dpnco-river-contact .dpnco-statement-shortcut,
+body.dpnco-controls-restored .hero .dpnco-river-contact [data-dpnco-rain-toggle],
+body.dpnco-controls-restored .hero .dpnco-river-contact [data-dpnco-sound-toggle] {
+ position:absolute!important;
+ top:auto!important;
+ bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
+}
+@media screen and (orientation:landscape) and (max-height:600px){
+ body.dpnco-controls-restored .hero .dpnco-river-contact a,
+ body.dpnco-controls-restored .hero .dpnco-river-contact .dpnco-statement-shortcut,
+ body.dpnco-controls-restored .hero .dpnco-river-contact [data-dpnco-rain-toggle],
+ body.dpnco-controls-restored .hero .dpnco-river-contact [data-dpnco-sound-toggle] {
   bottom:max(14px,env(safe-area-inset-bottom))!important;
  }
 }
