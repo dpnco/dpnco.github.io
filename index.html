@@ -1047,6 +1047,33 @@ $('.grid_card.card_4').ripples({
 });
 </script>
 
+  <script id="dpnco-ripple-orientation-stability">
+  /* Preserve the original overhead ripple perspective when the iPhone rotates.
+     Refresh the WebGL drawing size after Safari finishes resizing its viewport. */
+  (function(){
+    var previousOrientation=window.innerWidth>=window.innerHeight?'landscape':'portrait';
+    var timers=[];
+    function refresh(){
+      var hero=document.querySelector('.hero');
+      if(!hero||!window.jQuery||!window.jQuery.fn.ripples)return;
+      var water=window.jQuery(hero);
+      if(!water.data('ripples'))return;
+      try{water.ripples('updateSize');}catch(e){}
+    }
+    function onResize(){
+      var next=window.innerWidth>=window.innerHeight?'landscape':'portrait';
+      if(next===previousOrientation)return;
+      previousOrientation=next;
+      timers.forEach(clearTimeout);
+      timers=[setTimeout(refresh,80),setTimeout(refresh,350),setTimeout(refresh,850)];
+    }
+    window.addEventListener('orientationchange',function(){
+      timers.forEach(clearTimeout);
+      timers=[setTimeout(refresh,80),setTimeout(refresh,350),setTimeout(refresh,850)];
+    },{passive:true});
+    window.addEventListener('resize',onResize,{passive:true});
+  })();
+  </script>
   <!-- Reflection 01 comparison: change specular rim only; original ripple physics remain unc
   <style id="dpnco-subtle-letter-refraction-style">
   /* Only replace the logo's pixels after WebGL has the matching texture. */
