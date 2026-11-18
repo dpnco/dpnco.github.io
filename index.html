@@ -1293,5 +1293,14 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut.dpnc
  document.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')activate(e);},true);
 })();
 </script>
+<style id="dpnco-ripple-perspective-45">
+/* Trial: 45-degree oblique water view. A 1.414x horizontal projection
+   makes circular rings read as perspective ellipses without exposing edges.
+   This affects only the water canvas, not logos or buttons. */
+.hero > canvas {
+ transform:scaleX(1.41421356)!important;
+ transform-origin:50% 50%!important;
+}
+</style>
 </body>
 </html>
