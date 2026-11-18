@@ -22,7 +22,7 @@
   body.dpnco-controls-idle .hero .dpnco-rain-toggle,
   body.dpnco-controls-idle .dpnco-river-contact a,
   body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
-    opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+    opacity:0!important;pointer-events:none!important;
   }
   .hero .dpnco-vector-logo:not(.dpnco-wordmark-ready) .dpnco-vector-art {
     visibility:hidden!important;
@@ -1145,7 +1145,7 @@ body.dpnco-controls-idle .hero .dpnco-rain-toggle,
 body.dpnco-controls-idle .hero .dpnco-rain-toggle.dpnco-sound-toggle,
 body.dpnco-controls-idle .dpnco-river-contact a,
 body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
- opacity:0!important;visibility:hidden!important;pointer-events:none!important;
+ opacity:0!important;pointer-events:none!important;
 }
 .hero .dpnco-rain-toggle,
 .hero .dpnco-rain-toggle.dpnco-sound-toggle,
@@ -1160,12 +1160,13 @@ body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
  function reveal(){
   document.body.classList.remove('dpnco-controls-idle');
   clearTimeout(timer);
-  timer=setTimeout(function(){document.body.classList.add('dpnco-controls-idle');},5000);
+  timer=setTimeout(function(){document.body.classList.add('dpnco-controls-idle');},3000);
  }
  function init(){
   document.body.classList.add('dpnco-controls-idle');
   document.addEventListener('pointerdown',reveal,{passive:true});
   document.addEventListener('touchstart',reveal,{passive:true});
+  document.addEventListener('touchend',reveal,{passive:true});
   document.addEventListener('pointermove',function(e){
    if(e.pointerType==='touch')return;
    var now=Date.now();if(now-lastMouse<100)return;lastMouse=now;reveal();
