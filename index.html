@@ -460,8 +460,17 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
    var key=document.createElement('button');key.type='button';
    key.className='dpnco-gayageum-zone';key.textContent=letters[i];key.setAttribute('data-letter',letters[i]);key.setAttribute('data-note-index',String(i));key.setAttribute('aria-label',letters[i]+': gayageum '+pitch);
    key.setAttribute('title',letters[i]+' · '+pitch);
-   key.addEventListener('pointerenter',function(e){if(e.pointerType!=='touch')playNote(pitch);},{signal:signal});
-   key.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();playNote(pitch);},{signal:signal});
+   key.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')playNote(pitch);},{signal:signal});
+   // Start on pointerdown, before the delayed synthesized click on touch devices.
+   key.addEventListener('pointerdown',function(e){
+    if(e.pointerType==='mouse')return; // Mouse already plays on hover.
+    playNote(pitch);
+   },{signal:signal});
+   // Keyboard-generated clicks remain accessible without replaying pointer taps.
+   key.addEventListener('click',function(e){
+    e.preventDefault();e.stopPropagation();
+    if(e.detail===0)playNote(pitch);
+   },{signal:signal});
    zones.appendChild(key);
   });
   logo.appendChild(zones);logo.classList.add('dpnco-wordmark-ready');
