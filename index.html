@@ -1231,5 +1231,40 @@ $('.grid_card.card_4').ripples({
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
 </script>
+<style id="dpnco-unified-button-feedback">
+/* Keep all four controls in their current positions. Dim by default; illuminate only when pressed. */
+body.dpnco-controls-restored .hero [data-dpnco-rain-toggle],
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle],
+body.dpnco-controls-restored .dpnco-river-contact a,
+body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
+ opacity:.30!important;
+ filter:blur(.45px) grayscale(.15)!important;
+ transition:opacity .22s ease,filter .22s ease!important;
+ visibility:visible!important;
+ pointer-events:auto!important;
+}
+body.dpnco-controls-restored .hero [data-dpnco-rain-toggle].dpnco-button-active,
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle].dpnco-button-active,
+body.dpnco-controls-restored .dpnco-river-contact a.dpnco-button-active,
+body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut.dpnco-button-active {
+ opacity:1!important;
+ filter:blur(0) drop-shadow(0 0 5px rgba(255,255,255,.5))!important;
+}
+</style>
+<script id="dpnco-unified-button-feedback">
+(function(){
+ var selector='[data-dpnco-rain-toggle],[data-dpnco-sound-toggle],.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut';
+ function activate(e){
+  var el=e.target&&e.target.closest&&e.target.closest(selector);
+  if(!el)return;
+  el.classList.add('dpnco-button-active');
+  clearTimeout(el._dpncoDimTimer);
+  el._dpncoDimTimer=setTimeout(function(){el.classList.remove('dpnco-button-active');},1400);
+ }
+ document.addEventListener('pointerdown',activate,{capture:true,passive:true});
+ document.addEventListener('touchstart',activate,{capture:true,passive:true});
+ document.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' ')activate(e);},true);
+})();
+</script>
 </body>
 </html>
