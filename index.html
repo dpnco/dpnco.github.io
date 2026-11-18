@@ -660,26 +660,12 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   // Landscape and desktop retain their existing size and positioning.
   if(window.matchMedia('(max-width:600px) and (orientation:portrait)').matches){
    // Vary word sizes and positions inside the central region, but never crop text.
-   var portraitSizes=[.2125,.29,.468,.24,.494,.27];
-   var portraitX=[.50,.48,.53,.50,.47,.52];
-   var portraitY=[.40,.40,.40,.40,.40,.40];
+   // Use Imagine's exact font size and center position for all six words.
    var viewportW=window.innerWidth,viewportH=window.innerHeight;
-   var availableW=viewportW-32;
-   var fontSize=Math.max(28,viewportW*portraitSizes[index]);
+   var fontSize=Math.max(28,viewportW*.2125);
    wordsWrap.style.fontSize=fontSize+'px';
-   wordsWrap.style.left='50%';wordsWrap.style.top='43%';
-   for(var attempt=0;attempt<7;attempt++){
-    box=wordsWrap.getBoundingClientRect();
-    if(box.width<=availableW)break;
-    fontSize=Math.max(12,fontSize*availableW/box.width*.985);
-    wordsWrap.style.fontSize=fontSize+'px';
-   }
-   box=wordsWrap.getBoundingClientRect();
-   var halfW=box.width/2,halfH=box.height/2;
-   var x=Math.max(halfW+16,Math.min(viewportW-halfW-16,viewportW*portraitX[index]));
-   var desiredY=viewportH*portraitY[index];
-   var y=Math.max(halfH+16,Math.min(viewportH-halfH-16,desiredY));
-   wordsWrap.style.left=x+'px';wordsWrap.style.top=y+'px';
+   wordsWrap.style.left=(viewportW*.50)+'px';
+   wordsWrap.style.top=(viewportH*.40)+'px';
    return;
   }
   box=wordsWrap.getBoundingClientRect();
