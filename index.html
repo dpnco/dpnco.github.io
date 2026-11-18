@@ -662,7 +662,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
    // Vary word sizes and positions inside the central region, but never crop text.
    var portraitSizes=[.2125,.29,.468,.24,.494,.27];
    var portraitX=[.50,.48,.53,.50,.47,.52];
-   var portraitY=[.40,.45,.43,.39,.46,.42];
+   var portraitY=[.40,.40,.40,.40,.40,.40];
    var viewportW=window.innerWidth,viewportH=window.innerHeight;
    var availableW=viewportW-32;
    var fontSize=Math.max(28,viewportW*portraitSizes[index]);
@@ -677,7 +677,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
    box=wordsWrap.getBoundingClientRect();
    var halfW=box.width/2,halfH=box.height/2;
    var x=Math.max(halfW+16,Math.min(viewportW-halfW-16,viewportW*portraitX[index]));
-   var desiredY=viewportH*portraitY[index] - ((index===2||index===4)?fontSize*.5:0);
+   var desiredY=viewportH*portraitY[index];
    var y=Math.max(halfH+16,Math.min(viewportH-halfH-16,desiredY));
    wordsWrap.style.left=x+'px';wordsWrap.style.top=y+'px';
    return;
