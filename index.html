@@ -18,18 +18,24 @@
   <link href="favicon.png?v=20261117-approved" rel="icon" type="image/png">
   <link href="favicon.png?v=20261117-approved" rel="apple-touch-icon">
   <style id="dpnco-first-paint-visibility">
-  /* Hide controls and the legacy logo before first paint, not after DOMContentLoaded. */
-  body.dpnco-controls-idle .hero .dpnco-rain-toggle,
-  body.dpnco-controls-idle .dpnco-river-contact a,
-  body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
-    opacity:0!important;pointer-events:none!important;
-  }
-  .hero .dpnco-vector-logo:not(.dpnco-wordmark-ready) .dpnco-vector-art {
-    visibility:hidden!important;
-  }
-  </style>
+/* Single source of truth: controls start hidden and reveal only on interaction. */
+body:not(.dpnco-controls-visible) .hero .dpnco-rain-toggle,
+body:not(.dpnco-controls-visible) .hero .dpnco-rain-toggle[aria-pressed],
+body:not(.dpnco-controls-visible) .dpnco-river-contact a,
+body:not(.dpnco-controls-visible) .dpnco-river-contact .dpnco-statement-shortcut {
+ opacity:0!important;pointer-events:none!important;
+}
+body.dpnco-controls-visible .hero .dpnco-rain-toggle,
+body.dpnco-controls-visible .hero .dpnco-rain-toggle[aria-pressed],
+body.dpnco-controls-visible .dpnco-river-contact a,
+body.dpnco-controls-visible .dpnco-river-contact .dpnco-statement-shortcut {
+ opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+}
+.dpnco-river-contact {z-index:1001!important;}
+.hero .dpnco-vector-logo:not(.dpnco-wordmark-ready) .dpnco-vector-art {visibility:hidden!important;}
+</style>
 </head>
-<body class="body-black dpnco-controls-idle">
+<body class="body-black">
   <section class="hero">
     <div class="page-inner">
       <div class="heading-wrap">
@@ -1146,73 +1152,33 @@ $('.grid_card.card_4').ripples({
 })();
 </script>
 <style id="dpnco-auto-hide-controls-style">
-/* All four corner controls are quiet until user activity; preserve their layout. */
-body.dpnco-controls-idle .hero .dpnco-rain-toggle,
-body.dpnco-controls-idle .hero .dpnco-rain-toggle.dpnco-sound-toggle,
-body.dpnco-controls-idle .dpnco-river-contact a,
-body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
- opacity:0!important;pointer-events:none!important;
-}
 .hero .dpnco-rain-toggle,
-.hero .dpnco-rain-toggle.dpnco-sound-toggle,
 .dpnco-river-contact a,
 .dpnco-river-contact .dpnco-statement-shortcut {
  transition:opacity 250ms ease,filter 180ms ease!important;
-}
-/* Force all four controls to obey the same state, including the frog's own !important opacity. */
-body.dpnco-controls-idle .hero .dpnco-rain-toggle,
-body.dpnco-controls-idle .hero .dpnco-rain-toggle.dpnco-sound-toggle,
-body.dpnco-controls-idle .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"],
-body.dpnco-controls-idle .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"],
-body.dpnco-controls-idle .dpnco-river-contact a,
-body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
- opacity:0!important;pointer-events:none!important;
-}
-/* Explicit visible state overrides older Webflow and sound-button opacity rules. */
-body.dpnco-controls-visible .hero .dpnco-rain-toggle,
-body.dpnco-controls-visible .hero .dpnco-rain-toggle.dpnco-sound-toggle,
-body.dpnco-controls-visible .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"],
-body.dpnco-controls-visible .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"],
-body.dpnco-controls-visible .dpnco-river-contact a,
-body.dpnco-controls-visible .dpnco-river-contact .dpnco-statement-shortcut {
- opacity:1!important;visibility:visible!important;pointer-events:auto!important;
 }
 </style>
 <script id="dpnco-auto-hide-controls">
 (function(){
  var timer=null,lastMouse=0;
- var selector='.hero .dpnco-rain-toggle,.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut';
- function setControls(visible){
-  document.body.classList.toggle('dpnco-controls-visible',visible);
-  document.body.classList.toggle('dpnco-controls-idle',!visible);
-  document.querySelectorAll(selector).forEach(function(el){
-   // Inline important styles override all old Webflow state and sound-button CSS.
-   el.style.setProperty('opacity',visible?'1':'0','important');
-   el.style.setProperty('pointer-events',visible?'auto':'none','important');
-   el.style.setProperty('visibility','visible','important');
-  });
- }
  function reveal(){
-  setControls(true);
+  document.body.classList.add('dpnco-controls-visible');
   clearTimeout(timer);
-  timer=setTimeout(function(){setControls(false);},3000);
+  timer=setTimeout(function(){
+   document.body.classList.remove('dpnco-controls-visible');
+  },3000);
  }
  function init(){
-  setControls(false);
-  window.addEventListener('pointerdown',reveal,{passive:true,capture:true});
-  window.addEventListener('touchstart',reveal,{passive:true,capture:true});
-  window.addEventListener('touchend',reveal,{passive:true,capture:true});
-  window.addEventListener('click',reveal,{capture:true});
+  document.body.classList.remove('dpnco-controls-visible');
+  window.addEventListener('touchstart',reveal,{capture:true,passive:true});
+  window.addEventListener('pointerdown',reveal,{capture:true,passive:true});
+  window.addEventListener('click',reveal,{capture:true,passive:true});
   window.addEventListener('pointermove',function(e){
    if(e.pointerType==='touch')return;
-   var now=Date.now();if(now-lastMouse<100)return;lastMouse=now;reveal();
+   var now=Date.now();if(now-lastMouse<100)return;
+   lastMouse=now;reveal();
   },{passive:true});
   window.addEventListener('keydown',reveal);
-  // The contact controls are created later by the motto controller.
-  var observer=new MutationObserver(function(){
-   if(document.body.classList.contains('dpnco-controls-idle'))setControls(false);
-  });
-  observer.observe(document.body,{childList:true,subtree:true});
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
 })();
