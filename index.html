@@ -487,6 +487,23 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 @media(prefers-reduced-motion:reduce){.hero .dpnco-hero-note{transition:none!important;}}
 @media(max-width:600px){.dpnco-river-contact a{left:18px;bottom:20px;}.dpnco-river-contact .dpnco-statement-shortcut{left:58px;bottom:20px;}}
 @media(prefers-reduced-motion:reduce){.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut{transition:none;}}
+/* Mobile viewport background coverage only (portrait and landscape).
+   Keep desktop layout, button placement, audio, and scrolling unchanged. */
+@media screen and (hover:none) and (pointer:coarse) {
+ html,body.body-black {background-color:#4d8197!important;}
+ .hero {
+  width:100vw!important;
+  width:100dvw!important;
+  height:100vh!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  max-width:none!important;
+ }
+ .hero > canvas {
+  width:100%!important;
+  height:100%!important;
+ }
+}
 /* Phone-sized layout only; existing desktop rules and interactions are unchanged. */
 @media screen and (max-width:600px){
  /* Extend the water behind iPhone Safari's bottom controls; 100svh was short. */
