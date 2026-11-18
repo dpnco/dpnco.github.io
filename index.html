@@ -1153,20 +1153,34 @@ body.dpnco-controls-idle .dpnco-river-contact .dpnco-statement-shortcut {
 .dpnco-river-contact .dpnco-statement-shortcut {
  transition:opacity 250ms ease,filter 180ms ease!important;
 }
+/* Explicit visible state overrides older Webflow and sound-button opacity rules. */
+body.dpnco-controls-visible .hero .dpnco-rain-toggle,
+body.dpnco-controls-visible .hero .dpnco-rain-toggle.dpnco-sound-toggle,
+body.dpnco-controls-visible .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"],
+body.dpnco-controls-visible .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"],
+body.dpnco-controls-visible .dpnco-river-contact a,
+body.dpnco-controls-visible .dpnco-river-contact .dpnco-statement-shortcut {
+ opacity:1!important;visibility:visible!important;pointer-events:auto!important;
+}
 </style>
 <script id="dpnco-auto-hide-controls">
 (function(){
  var timer=null,lastMouse=0;
  function reveal(){
   document.body.classList.remove('dpnco-controls-idle');
+  document.body.classList.add('dpnco-controls-visible');
   clearTimeout(timer);
-  timer=setTimeout(function(){document.body.classList.add('dpnco-controls-idle');},3000);
+  timer=setTimeout(function(){
+   document.body.classList.remove('dpnco-controls-visible');
+   document.body.classList.add('dpnco-controls-idle');
+  },3000);
  }
  function init(){
+  document.body.classList.remove('dpnco-controls-visible');
   document.body.classList.add('dpnco-controls-idle');
-  document.addEventListener('pointerdown',reveal,{passive:true});
-  document.addEventListener('touchstart',reveal,{passive:true});
-  document.addEventListener('touchend',reveal,{passive:true});
+  window.addEventListener('pointerdown',reveal,{passive:true,capture:true});
+  window.addEventListener('touchstart',reveal,{passive:true,capture:true});
+  window.addEventListener('touchend',reveal,{passive:true,capture:true});
   document.addEventListener('pointermove',function(e){
    if(e.pointerType==='touch')return;
    var now=Date.now();if(now-lastMouse<100)return;lastMouse=now;reveal();
