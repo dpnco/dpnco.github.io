@@ -662,10 +662,11 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
    // Vary word sizes and positions inside the central region, but never crop text.
    // Use Imagine's exact font size and center position for all six words.
    var viewportW=window.innerWidth,viewportH=window.innerHeight;
-   var fontSize=Math.max(28,viewportW*.2125);
+   var originalFontSize=Math.max(28,viewportW*.2125);
+   var fontSize=originalFontSize*1.10;
    wordsWrap.style.fontSize=fontSize+'px';
    wordsWrap.style.left=(viewportW*.50)+'px';
-   wordsWrap.style.top=(viewportH*.40)+'px';
+   wordsWrap.style.top=(viewportH*.40-originalFontSize)+'px';
    return;
   }
   box=wordsWrap.getBoundingClientRect();
