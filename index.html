@@ -18,71 +18,13 @@
   <link href="favicon.png?v=20261117-approved" rel="icon" type="image/png">
   <link href="favicon.png?v=20261117-approved" rel="apple-touch-icon">
   <style id="dpnco-first-paint-visibility">
-/* Controls restored to always visible until the next editing session. */
-body.dpnco-controls-restored .hero .dpnco-rain-toggle,
-body.dpnco-controls-restored .hero .dpnco-rain-toggle[aria-pressed],
-body.dpnco-controls-restored .dpnco-river-contact a,
-body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {opacity:1!important;visibility:visible!important;pointer-events:auto!important;}
-
-body:not(.dpnco-controls-visible):not(.dpnco-controls-restored) .hero .dpnco-rain-toggle,
-body:not(.dpnco-controls-visible):not(.dpnco-controls-restored) .hero .dpnco-rain-toggle[aria-pressed],
-body:not(.dpnco-controls-visible):not(.dpnco-controls-restored) .dpnco-river-contact a,
-body:not(.dpnco-controls-visible):not(.dpnco-controls-restored) .dpnco-river-contact .dpnco-statement-shortcut {
- opacity:0!important;pointer-events:none!important;
-}
-body.dpnco-controls-visible .hero .dpnco-rain-toggle,
-body.dpnco-controls-visible .hero .dpnco-rain-toggle[aria-pressed],
-body.dpnco-controls-visible .dpnco-river-contact a,
-body.dpnco-controls-visible .dpnco-river-contact .dpnco-statement-shortcut {
- opacity:1!important;visibility:visible!important;pointer-events:auto!important;
-}
-.dpnco-river-contact {z-index:1001!important;}
-/* Keep controls above the water canvas and the second-page overlay. */
+/* Keep the opening hero above the scrolling scenes and hide controls until the overlay is ready. */
 .hero {z-index:4!important;}
-.hero .dpnco-rain-toggle {z-index:1002!important;}
-.dpnco-river-contact {pointer-events:none!important;}
-.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut {z-index:1003!important;}
 .hero .dpnco-vector-logo:not(.dpnco-wordmark-ready) .dpnco-vector-art {visibility:hidden!important;}
-/* Restore the four original controls on mobile and desktop, independently of scrolling. */
-body.dpnco-controls-restored .hero [data-dpnco-rain-toggle],
-body.dpnco-controls-restored .hero [data-dpnco-sound-toggle] {
- display:flex!important;position:fixed!important;bottom:max(24px,env(safe-area-inset-bottom))!important;
- z-index:2147483000!important;opacity:1!important;visibility:visible!important;
- pointer-events:auto!important;touch-action:manipulation!important;
-}
-body.dpnco-controls-restored .dpnco-river-contact {
- position:fixed!important;inset:0!important;z-index:2147482999!important;
- pointer-events:none!important;visibility:visible!important;opacity:1!important;
-}
-body.dpnco-controls-restored .dpnco-river-contact a,
-body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
- display:inline-flex!important;position:absolute!important;
- bottom:max(24px,env(safe-area-inset-bottom))!important;
- opacity:1!important;visibility:visible!important;pointer-events:auto!important;
- touch-action:manipulation!important;
-}
-/* iPhone landscape: align all four existing controls on one horizontal baseline. */
-@media screen and (orientation:landscape) and (max-height:600px) {
- body.dpnco-controls-restored .hero [data-dpnco-rain-toggle],
- body.dpnco-controls-restored .hero [data-dpnco-sound-toggle],
- body.dpnco-controls-restored .dpnco-river-contact a,
- body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
-  position:fixed!important;
-  top:auto!important;
-  bottom:max(14px,env(safe-area-inset-bottom))!important;
-  width:36px!important;height:36px!important;
-  margin:0!important;padding:0!important;
-  display:flex!important;align-items:center!important;justify-content:center!important;
-  box-sizing:border-box!important;
- }
- body.dpnco-controls-restored .dpnco-river-contact a {left:max(16px,env(safe-area-inset-left))!important;right:auto!important;}
- body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {left:max(62px,calc(env(safe-area-inset-left) + 46px))!important;right:auto!important;}
- body.dpnco-controls-restored .hero [data-dpnco-sound-toggle] {right:max(62px,calc(env(safe-area-inset-right) + 46px))!important;left:auto!important;}
- body.dpnco-controls-restored .hero [data-dpnco-rain-toggle] {right:max(16px,env(safe-area-inset-right))!important;left:auto!important;}
-}
+.hero > .dpnco-rain-toggle {visibility:hidden;}
 </style>
 </head>
-<body class="body-black dpnco-controls-restored">
+<body class="body-black">
   <section class="hero">
     <div class="page-inner">
       <div class="heading-wrap">
@@ -590,16 +532,26 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
 .hero{position:fixed!important;inset:0!important;width:100%!important;height:100svh!important;min-height:100svh!important;z-index:1!important;isolation:isolate;}
 .hero .page-inner{opacity:1!important;}
 .hero .dpnco-vector-logo{left:0!important;top:0!important;}
-.hero .dpnco-rain-toggle,.hero .dpnco-rain-toggle.dpnco-sound-toggle{position:fixed!important;bottom:20px!important;z-index:999!important;pointer-events:auto!important;}
 .dpnco-second-page{position:relative!important;display:block!important;width:100%!important;height:300svh!important;min-height:300svh!important;background:transparent!important;overflow:visible!important;isolation:auto!important;z-index:2;pointer-events:none;}
 .dpnco-continuous-journey,.dpnco-sunrise-generated,.dpnco-journey-sky,.dpnco-journey-storm,.dpnco-journey-sand,.dpnco-journey-rain-canvas,.dpnco-journey-last{display:none!important;}
 .dpnco-river-motto{position:fixed;inset:0;width:100%;height:100svh;pointer-events:none;opacity:1;visibility:visible;}
 .dpnco-river-words{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%);width:max-content;max-width:calc(100vw - 40px);margin:0;font:700 clamp(128px,22vw,336px)/1.1 'Helvetica Neue',Arial,sans-serif;letter-spacing:normal;word-spacing:normal;color:#fff;white-space:nowrap;opacity:0;pointer-events:none;}
-.dpnco-river-contact{position:fixed;inset:0;width:100%;height:100svh;pointer-events:none;box-sizing:border-box;opacity:1;visibility:visible;transition:none;}
-.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut{opacity:.3;position:absolute;bottom:24px;left:24px;color:#fff;display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;text-decoration:none;pointer-events:auto;transition:opacity 220ms ease,filter 220ms ease;}
-.dpnco-river-contact a svg,.dpnco-river-contact .dpnco-statement-shortcut svg{display:block;width:28px;height:28px;}
-.dpnco-river-contact .dpnco-statement-shortcut{left:64px;padding:0;border:0;border-radius:0;background:transparent;cursor:pointer;}
-.dpnco-river-contact a:hover,.dpnco-river-contact a:focus-visible,.dpnco-river-contact .dpnco-statement-shortcut:hover,.dpnco-river-contact .dpnco-statement-shortcut:focus-visible{opacity:1;filter:drop-shadow(0 0 6px rgba(255,255,255,.7));}
+.hero .dpnco-river-contact{
+ position:absolute;inset:0;z-index:1001;display:flex;align-items:flex-end;gap:8px;
+ padding:0 max(24px,env(safe-area-inset-right)) max(24px,env(safe-area-inset-bottom)) max(24px,env(safe-area-inset-left));
+ box-sizing:border-box;pointer-events:none;opacity:0;transition:opacity 250ms ease;
+}
+.hero .dpnco-river-contact.dpnco-controls-visible{opacity:1;}
+.hero .dpnco-river-contact > :is(a,button){
+ position:relative;inset:auto;display:flex;align-items:center;justify-content:center;flex:0 0 32px;
+ width:32px;height:32px;box-sizing:border-box;margin:0;padding:0;border:0;border-radius:0;
+ background:transparent;color:#fff;text-decoration:none;cursor:pointer;opacity:1!important;
+ pointer-events:none;touch-action:manipulation;
+}
+.hero .dpnco-river-contact.dpnco-controls-visible > :is(a,button){pointer-events:auto;}
+.hero .dpnco-river-contact > [data-dpnco-sound-toggle]{margin-left:auto;}
+.dpnco-river-contact a[href^="mailto:"] svg,.dpnco-river-contact .dpnco-statement-shortcut svg{display:block;width:28px;height:28px;}
+.dpnco-river-contact a[href^="mailto:"]:is(:hover,:focus-visible),.dpnco-river-contact .dpnco-statement-shortcut:is(:hover,:focus-visible){filter:drop-shadow(0 0 6px rgba(255,255,255,.7));}
 /* Small balanced three-line founder quote beneath the interactive logo. */
 .hero .heading-wrap{position:relative;}
 .hero .dpnco-hero-note{
@@ -623,8 +575,7 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  .hero .dpnco-hero-note-copy span{white-space:normal;}
 }
 @media(prefers-reduced-motion:reduce){.hero .dpnco-hero-note{transition:none!important;}}
-@media(max-width:600px){.dpnco-river-contact a{left:18px;bottom:20px;}.dpnco-river-contact .dpnco-statement-shortcut{left:58px;bottom:20px;}}
-@media(prefers-reduced-motion:reduce){.dpnco-river-contact a,.dpnco-river-contact .dpnco-statement-shortcut{transition:none;}}
+@media(prefers-reduced-motion:reduce){.hero .dpnco-river-contact{transition:none;}}
 /* Mobile viewport background coverage only (portrait and landscape).
    Keep desktop layout, button placement, audio, and scrolling unchanged. */
 @media screen and (hover:none) and (pointer:coarse) {
@@ -647,29 +598,19 @@ html,body{scroll-snap-type:none!important;overscroll-behavior-y:none;}
  /* Extend the water behind iPhone Safari's bottom controls; 100svh was short. */
  .hero{height:100dvh!important;min-height:100dvh!important;}
  .body-black{background-color:#4d8197;}
- .hero .dpnco-rain-toggle,
- .hero .dpnco-rain-toggle.dpnco-sound-toggle,
- .dpnco-river-contact a,
- .dpnco-river-contact .dpnco-statement-shortcut{
-  box-sizing:border-box!important;
-  position:fixed!important;
-  top:auto!important;
-  bottom:calc(12px + env(safe-area-inset-bottom,0px))!important;
-  width:44px!important;
-  height:44px!important;
-  margin:0!important;
-  padding:0!important;
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  line-height:1!important;
+ .hero .dpnco-river-contact{
+  gap:4px;padding-right:max(12px,env(safe-area-inset-right));
+  padding-bottom:calc(12px + env(safe-area-inset-bottom));padding-left:max(12px,env(safe-area-inset-left));
  }
- .dpnco-river-contact a{left:12px!important;right:auto!important;}
- .dpnco-river-contact .dpnco-statement-shortcut{left:60px!important;right:auto!important;}
- .hero .dpnco-rain-toggle.dpnco-sound-toggle{right:60px!important;left:auto!important;}
- .hero .dpnco-rain-toggle:not(.dpnco-sound-toggle){right:12px!important;left:auto!important;}
+ .hero .dpnco-river-contact > :is(a,button){flex-basis:44px;width:44px;height:44px;}
  .dpnco-river-words{max-width:none!important;}
- .hero .dpnco-rain-toggle.dpnco-sound-toggle{touch-action:manipulation!important;}
+}
+@media screen and (orientation:landscape) and (max-height:600px){
+ .hero .dpnco-river-contact{
+  gap:10px;padding-right:max(16px,env(safe-area-inset-right));
+  padding-bottom:max(14px,env(safe-area-inset-bottom));padding-left:max(16px,env(safe-area-inset-left));
+ }
+ .hero .dpnco-river-contact > :is(a,button){flex-basis:36px;width:36px;height:36px;}
 }
 </style>
     <script id="dpnco-three-section-controller">
@@ -689,7 +630,22 @@ function init(){
  statementButton.setAttribute('aria-pressed','false');
  statementButton.setAttribute('title','Founder statement');
  statementButton.innerHTML='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>';
- contact.appendChild(statementButton);hero.appendChild(contact);contact.appendChild(hero.querySelector('[data-dpnco-sound-toggle]'));contact.appendChild(hero.querySelector('[data-dpnco-rain-toggle]'));
+ var soundButton=hero.querySelector('[data-dpnco-sound-toggle]');
+ var rainButton=hero.querySelector('[data-dpnco-rain-toggle]');
+ contact.append(statementButton,soundButton,rainButton);
+ hero.appendChild(contact);
+
+ var controlsTimer;
+ function revealControls(){
+  contact.classList.add('dpnco-controls-visible');
+  clearTimeout(controlsTimer);
+  controlsTimer=setTimeout(function(){contact.classList.remove('dpnco-controls-visible');},3000);
+ }
+ var controlActivityOptions={capture:true,passive:true,signal:signal};
+ ['pointermove','pointerdown','touchstart','touchmove'].forEach(function(type){
+  window.addEventListener(type,revealControls,controlActivityOptions);
+ });
+ contact.addEventListener('focusin',revealControls,{signal:signal});
 var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
  var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='motto',founderFadeTimer=null,founderPauseTimer=null,founderIdleTimer=null,founderIsFinal=false;
@@ -905,7 +861,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   if(window.matchMedia('(max-width:600px)').matches&&sequenceRunning&&wordsWrap.textContent)placeWord(completedWords);
   update();
  },{passive:true,signal:signal});
- window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);clearTimeout(founderFadeTimer);clearTimeout(founderPauseTimer);clearTimeout(founderIdleTimer);if(founderNote){founderNote.classList.remove('dpnco-note-visible','dpnco-note-leaving');founderNote.style.visibility='hidden';}sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
+ window.dpncoRiverJourney={dispose:function(){disposed=true;events.abort();clearInterval(wait);clearTimeout(controlsTimer);clearTimeout(founderFadeTimer);clearTimeout(founderPauseTimer);clearTimeout(founderIdleTimer);if(founderNote){founderNote.classList.remove('dpnco-note-visible','dpnco-note-leaving');founderNote.style.visibility='hidden';}sequenceEpoch++;if(wordAnimation)wordAnimation.cancel();page.classList.remove('dpnco-footer-visible','dpnco-motto-visible');motto.remove();hero.append(soundButton,rainButton);contact.remove();hero.style.removeProperty('--dpnco-opening-opacity');if(originalUrl&&getWater())window.jQuery(hero).ripples('set','imageUrl',originalUrl);}};
  motto.getBoundingClientRect();update();
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
