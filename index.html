@@ -224,7 +224,7 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut {
     rainButton.setAttribute('title',rainOn?'Rain on':'Rain off');
    }
    if(soundButton){
-    if(!soundButton.querySelector('.dpnco-nature-leaf-img'))soundButton.innerHTML="<svg class=\"dpnco-nature-leaf-img\" viewBox=\"0 0 32 32\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" aria-hidden=\"true\" focusable=\"false\"><path d=\"M6 25C6 13 15 6 27 5c-.5 13-7.5 22-19 22\" stroke=\"white\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M7 26c6-8 12-13 20-21\" stroke=\"white\" stroke-width=\"1.35\" stroke-linecap=\"round\"/></svg>";soundButton.style.opacity='1';
+    if(!soundButton.querySelector('.dpnco-nature-leaf-img'))soundButton.innerHTML="<svg class=\"dpnco-nature-leaf-img\" viewBox=\"126 93 228 190\" xmlns=\"http://www.w3.org/2000/svg\" aria-hidden=\"true\" focusable=\"false\"><path fill=\"#fff\" d=\"M348 124L334 116 302 105 261 98 235 98 212 102 194 109 177 119 165 129 152 145 141 168 139 197 143 213 146 217 171 191 201 167 253 140 272 134 275 136 241 153 197 185 173 209 152 236 137 260 131 276 144 277 166 243 192 257 209 260 230 259 253 249 267 237 279 222 307 159 322 143 347 127Z\"/></svg>";soundButton.style.opacity='1';
     soundButton.setAttribute('aria-pressed',String(soundOn));
     soundButton.setAttribute('aria-label',soundOn?'Turn soft rain sound off':'Turn soft rain sound on');
     soundButton.setAttribute('title',soundOn?'Soft rain sound on':'Soft rain sound off');
@@ -1303,9 +1303,14 @@ body.dpnco-controls-restored .dpnco-river-contact .dpnco-statement-shortcut.dpnc
 </script>
 
 <style id="dpnco-nature-leaf-toggle">
-.hero .dpnco-nature-leaf-img {display:block;width:28px;height:28px;position:relative;z-index:1;pointer-events:none;}
+/* The sound control uses the supplied leaf silhouette, rendered white in both states. */
+.hero .dpnco-nature-leaf-img {display:block;width:28px;height:28px;position:relative;z-index:1;pointer-events:none;fill:#fff;transition:filter .22s ease;}
 body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="false"] {opacity:.30!important;filter:blur(.45px)!important;}
-body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="true"] {opacity:1!important;filter:drop-shadow(0 0 4px rgba(255,255,255,.9)) drop-shadow(0 0 9px rgba(255,255,255,.55))!important;}
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="false"]::before {opacity:.04!important;}
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="true"] {opacity:1!important;filter:drop-shadow(0 0 5px rgba(255,255,255,.92)) drop-shadow(0 0 11px rgba(242,249,255,.67))!important;}
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="true"]::before {opacity:1!important;transform:translate(-50%,-50%) scale(1.07)!important;}
+body.dpnco-controls-restored .hero [data-dpnco-sound-toggle][aria-pressed="true"] .dpnco-nature-leaf-img {filter:drop-shadow(0 0 4px rgba(255,255,255,.95)) drop-shadow(0 0 8px rgba(235,248,255,.66))!important;}
+@media(prefers-reduced-motion:reduce){.hero .dpnco-nature-leaf-img{transition:none;}}
 </style>
 <style id="dpnco-four-controls-shared-baseline">
 /* One viewport-based baseline for the four controls, including during scrolling. */
