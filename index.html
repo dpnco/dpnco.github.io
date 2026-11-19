@@ -432,7 +432,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
   }
   // Resume during the actual user gesture, as required by mobile browsers.
   document.addEventListener('pointerdown',unlockAudio,{passive:true,signal:signal});
-  document.addEventListener('touchstart',unlockAudio,{passive:true,signal:signal});
+  document.addEventListener('touchend',unlockAudio,{passive:true,signal:signal});
   function stopAll(){
    activeSources.forEach(function(source){try{source.stop();}catch(e){}});
    activeSources.length=0;
@@ -486,7 +486,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
    key.className='dpnco-gayageum-zone';key.textContent=letters[i];key.setAttribute('data-letter',letters[i]);key.setAttribute('data-note-index',String(i));key.setAttribute('aria-label',letters[i]+': gayageum '+pitch);
    key.setAttribute('title',letters[i]+' · '+pitch);
    key.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')playNote(pitch);},{signal:signal});
-   // Start on pointerdown, before the delayed synthesized click on touch devices.
+   // Mouse hover and touch release have their own handlers.
    key.addEventListener('pointerdown',function(e){
     if(e.pointerType==='mouse'||e.pointerType==='touch')return; // Mouse hover and multi-touch are handled separately.
     playNote(pitch);
@@ -498,13 +498,13 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
    },{signal:signal});
    zones.appendChild(key);
   });
-  // Handle every newly placed finger independently (including simultaneous chords).
-  zones.addEventListener('touchstart',function(e){
+  // Play on touch release so iOS can authorize audio on the first tap.
+  zones.addEventListener('touchend',function(e){
    for(var i=0;i<e.changedTouches.length;i++){
     var touch=e.changedTouches[i];
     var target=document.elementFromPoint(touch.clientX,touch.clientY);
     var key=target&&target.closest&&target.closest('.dpnco-gayageum-zone');
-    if(key&&zones.contains(key)){
+    if(key&&zones.contains(key)&&key.contains(touch.target)){
      var noteIndex=Number(key.getAttribute('data-note-index'));
      if(pitches[noteIndex])playNote(pitches[noteIndex]);
     }
