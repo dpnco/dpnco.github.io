@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#0b1021">
+<title>DP&Co | Gayageum × Orchestra — Musical Study</title>
+<style>
+:root{font-family:Arial,Helvetica,sans-serif;color:#f4f4f5;background:#080d1c}
+*{box-sizing:border-box}
+body{min-height:100svh;margin:0;background:radial-gradient(ellipse at 50% 31%,#25345c 0%,#121a35 37%,#090e1e 76%,#060812 100%);display:grid;place-items:center}
+main{width:min(880px,100%);text-align:center;padding:40px 20px 35px}
+.eyebrow{font:500 10px/1.8 Arial,sans-serif;letter-spacing:.26em;color:#adbcd2;text-transform:uppercase}
+h1{font:normal clamp(27px,4.5vw,46px)/1.15 Georgia,'Times New Roman',serif;letter-spacing:.008em;margin:16px 0 16px}
+.intro{font-size:14px;line-height:1.75;color:#c6cbda;max-width:560px;margin:0 auto}
+.stage{margin:40px auto 0;max-width:420px}
+.stage-name{font:400 19px/1.5 Georgia,serif;color:#f4e5c2;letter-spacing:.03em;min-height:30px}
+.stage-explanation{font-size:11px;letter-spacing:.06em;color:#b1bccf;min-height:20px;margin-top:2px}
+.arc{height:3px;border-radius:4px;background:rgba(235,237,243,.13);margin:18px auto 0;overflow:hidden;max-width:320px}
+.arc-fill{height:100%;width:4%;border-radius:4px;background:linear-gradient(90deg,#a4b7d7,#f4dcad);transition:width 1s ease}
+.instrument{display:flex;justify-content:center;align-items:baseline;gap:clamp(6px,1.3vw,15px);margin:54px 0 44px;white-space:nowrap;touch-action:manipulation}
+.note{border:0;padding:3px 1px;background:transparent;font:900 clamp(33px,8.1vw,82px)/1 Georgia,'Times New Roman',serif;color:#fff;cursor:pointer;text-shadow:0 5px 22px rgba(100,140,210,.24);transition:color .15s ease,transform .16s ease}
+.note:hover,.note:focus-visible,.note.active{color:#ffe7af;transform:translateY(-4px)}
+.note:focus-visible{outline:1px dashed #d9dce8;outline-offset:8px}
+.period{font:500 clamp(28px,6vw,46px)/1 Georgia,serif;margin:0 0 7px -9px;align-self:flex-end}
+.controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:13px}
+button.action{border:1px solid rgba(234,232,223,.46);border-radius:24px;color:#f4f1e8;background:rgba(252,247,235,.07);font-size:12px;letter-spacing:.02em;min-height:40px;padding:0 18px;cursor:pointer}
+button.action:hover,button.action:focus-visible{border-color:#eedfb8;background:rgba(252,247,235,.15)}
+button.action:disabled{opacity:.55;cursor:default}
+button.primary{background:#f3ead9;color:#192037;border-color:#f3ead9;font-weight:600}
+.control{display:flex;align-items:center;gap:8px;font-size:12px;color:#d4dbe5}
+input[type=range]{width:105px;accent-color:#e3cfac}
+label.switch{cursor:pointer}
+label.switch input{accent-color:#e5d5b5;width:17px;height:17px}
+.status{font-size:12px;color:#a8bed1;min-height:21px;margin:28px auto 0;line-height:1.8}
+.notehelp{font-size:11px;color:#8997af;line-height:1.5;margin:12px auto 0}
+.credits{font-size:10px;line-height:1.75;color:#72819c;max-width:620px;margin:47px auto 0}
+.credits a{color:#9aaccc}
+@media(max-width:500px){
+ main{padding:29px 10px}
+ .instrument{gap:clamp(3px,1.65vw,9px);margin:51px 0 34px}
+ .note{font-size:clamp(30px,9vw,49px)}
+ .period{margin-left:-7px;font-size:28px}
+ .controls{gap:9px}
+ button.action{padding:0 13px}
+ .stage{margin-top:30px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/soundfont-player@0.12.0/dist/soundfont-player.min.js"></script>
+</head>
+<body>
+<main>
+<div class="eyebrow">DP&Co · Private sound study · Original site unchanged</div>
+<h1>Gayageum × Orchestra</h1>
+<p class="intro">The gayageum leads. An orchestra grows around the melody — from quiet strings to harp, woodwinds, warm horns and a full cinematic finish.</p>
+
+<div class="stage" aria-live="polite" aria-atomic="true">
+ <div id="stage-name" class="stage-name">A quiet beginning</div>
+ <div id="stage-explanation" class="stage-explanation">Play the letters and listen as the music unfolds.</div>
+ <div class="arc" aria-hidden="true"><div id="arc-fill" class="arc-fill"></div></div>
+</div>
+
+<div class="instrument" role="group" aria-label="Seven gayageum notes using five pentatonic tones">
+ <button type="button" class="note" data-pitch="G3" aria-label="Gayageum G3">d</button>
+ <button type="button" class="note" data-pitch="A3" aria-label="Gayageum A3">p</button>
+ <button type="button" class="note" data-pitch="C4" aria-label="Gayageum C4">n</button>
+ <button type="button" class="note" data-pitch="D4" aria-label="Gayageum D4">c</button>
+ <button type="button" class="note" data-pitch="E4" aria-label="Gayageum E4">o</button>
+ <button type="button" class="note" data-pitch="G4" aria-label="Gayageum G4">c</button>
+ <button type="button" class="note" data-pitch="A4" aria-label="Gayageum A4">o</button><span class="period" aria-hidden="true">.</span>
+</div>
+<div class="controls">
+ <button type="button" id="enable" class="action primary">Enable sound</button>
+ <label class="control switch"><input type="checkbox" id="orchestra-enabled" checked>Orchestra on</label>
+ <label class="control">Level <input type="range" id="orchestra-level" value="62" min="0" max="100" aria-label="Orchestra volume"></label>
+ <button type="button" id="finale" class="action">Hear the finale</button>
+</div>
+<p id="status" role="status" class="status">Click Enable sound, then hover or tap the letters.</p>
+<p class="notehelp">Play freely. The orchestra follows a harmonic progression and gradually builds. Pause for a few seconds to hear it resolve.</p>
+<p class="credits">Sound study only; the existing DP&Co homepage has not been changed. Gayageum recordings: <a href="https://freesound.org/people/spt3125/" target="_blank" rel="noopener">spt3125 / Freesound</a> (CC0). Orchestral instrument samples: FluidR3 GM by Frank Wen and contributors (MIT) via <a href="https://gleitz.github.io/midi-js-soundfonts/" target="_blank" rel="noopener">MIDI.js Soundfonts</a>. Sounds load over the internet and may take a moment on the first play.</p>
+</main>
+<script>
+(function(){
+'use strict';
+var recordings={
+ G3:'https://cdn.freesound.org/previews/24/24572_164315-lq.mp3',
+ A3:'https://cdn.freesound.org/previews/24/24552_164315-lq.mp3',
+ C4:'https://cdn.freesound.org/previews/24/24559_164315-lq.mp3',
+ D4:'https://cdn.freesound.org/previews/24/24563_164315-lq.mp3',
+ E4:'https://cdn.freesound.org/previews/24/24567_164315-lq.mp3',
+ G4:'https://cdn.freesound.org/previews/24/24573_164315-lq.mp3',
+ A4:'https://cdn.freesound.org/previews/24/24553_164315-lq.mp3'
+};
+var instruments=[
+ {key:'strings',name:'string_ensemble_1',notes:['G3','A3','B3','C4','D4','E4','F4','G4','A4']},
+ {key:'cello',name:'cello',notes:['F2','G2','A2','C3','E3','G3','A3','C4']},
+ {key:'harp',name:'orchestral_harp',notes:['G3','A3','C4','D4','E4','F4','G4','A4']},
+ {key:'flute',name:'flute',notes:['C4','D4','E4','F4','G4','A4']},
+ {key:'horn',name:'french_horn',notes:['G3','A3','C4','D4','E4','F4','G4']},
+ {key:'timpani',name:'timpani',notes:['F2','G2','A2','C3']},
+ {key:'tremolo',name:'tremolo_strings',notes:['G3','A3','C4','D4','E4','F4','G4']}
+];
+var chords=[
+ {name:'C',bass:'C3',pad:['G3','C4','E4'],arp:['C4','G4','E4','G4'],wind:['G4','E4','D4'],horn:'G3'},
+ {name:'F',bass:'F2',pad:['A3','C4','E4'],arp:['A3','C4','E4','C4'],wind:['A4','G4','E4'],horn:'C4'},
+ {name:'Am',bass:'A2',pad:['G3','C4','E4'],arp:['A3','C4','E4','G4'],wind:['E4','D4','C4'],horn:'E4'},
+ {name:'Gsus',bass:'G2',pad:['G3','C4','D4'],arp:['G3','D4','C4','G4'],wind:['D4','C4','G4'],horn:'D4'}
+];
+var AC=window.AudioContext||window.webkitAudioContext;
+var ac=null,orchestraBus=null,reverb=null,wet=null,master=null,started=false;
+var samples={},templates={},players={},playerCount=0,voices=[],audioFallback=[];
+var enabled=document.getElementById('orchestra-enabled'),level=document.getElementById('orchestra-level');
+var btnEnable=document.getElementById('enable'),btnFinale=document.getElementById('finale');
+var status=document.getElementById('status'),stageName=document.getElementById('stage-name'),stageHelp=document.getElementById('stage-explanation'),arc=document.getElementById('arc-fill');
+var keys=Array.from(document.querySelectorAll('[data-pitch]'));
+var session=0,active=false,ending=false,barTimer=null,endTimer=null,doneTimer=null,notesPlayed=0,barsPlayed=0;
+var lastInput=0,startedAt=0,lastLead='C4',lastOrnament=0,stage=-1;
+var BAR=3.22;
+Object.keys(recordings).forEach(function(p){
+ var a=new Audio();a.preload='auto';a.src=recordings[p];a.volume=.416;templates[p]=a;
+});
+function show(text){status.textContent=text;}
+function describe(n){
+ if(n===stage)return;
+ stage=n;
+ var names=['I. A quiet beginning','II. The orchestra awakens','III. A soaring moment','IV. The final embrace'];
+ var explains=['Soft strings and harp beneath the gayageum.',
+               'Cello and woodwinds join the melody.',
+               'Full strings, horns and orchestral percussion.',
+               'A closing swell and a gentle resolution.'];
+ stageName.textContent=names[n];
+ stageHelp.textContent=explains[n];
+ arc.style.width=String([15,45,77,100][n])+'%';
+}
+function unlock(){
+ if(!AC){show('Web Audio is not available in this browser.');return false;}
+ if(!ac){
+  ac=new AC({latencyHint:'interactive'});
+  orchestraBus=ac.createGain();
+  master=ac.createGain();
+  master.gain.value=Number(level.value)/100;
+  orchestraBus.connect(master);master.connect(ac.destination);
+  try{
+   var duration=1.9,len=Math.floor(ac.sampleRate*duration);
+   var impulse=ac.createBuffer(2,len,ac.sampleRate);
+   for(var channel=0;channel<2;channel++){
+    var data=impulse.getChannelData(channel);
+    for(var i=0;i<len;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.3)*.45;
+   }
+   reverb=ac.createConvolver();reverb.buffer=impulse;
+   wet=ac.createGain();wet.gain.value=.17;
+   orchestraBus.connect(reverb);reverb.connect(wet);wet.connect(master);
+  }catch(err){console.warn('Reverb disabled',err);}
+ }
+ if(ac.state==='suspended')ac.resume().catch(function(){});
+ if(!started){started=true;loadAll();}
+ btnEnable.textContent='Sound enabled';
+ return true;
+}
+function loadAll(){
+ Object.keys(recordings).forEach(function(p){
+  fetch(recordings[p]).then(function(r){if(!r.ok)throw new Error('Failed recording '+p);return r.arrayBuffer();})
+  .then(function(a){return ac.decodeAudioData(a);})
+  .then(function(b){samples[p]=b;})
+  .catch(function(){});
+ });
+ if(!window.Soundfont){
+  show('Gayageum ready. Orchestral synthesis fallback enabled.');
+  return;
+ }
+ show('Sound on. Loading sampled orchestral instruments…');
+ instruments.forEach(function(spec){
+  window.Soundfont.instrument(ac,spec.name,{
+   soundfont:'FluidR3_GM',format:'mp3',destination:orchestraBus,notes:spec.notes
+  }).then(function(player){
+    players[spec.key]=player;playerCount++;
+    show('Orchestra: '+playerCount+' of '+instruments.length+' sampled sections ready. Play anytime.');
+  }).catch(function(error){console.warn('Orchestral section unavailable',spec.name,error);});
+ });
+}
+function gayageum(p){
+ if(!unlock())return;
+ if(samples[p]&&ac.state==='running'){
+  var s=ac.createBufferSource(),g=ac.createGain();
+  s.buffer=samples[p];g.gain.value=.416;s.connect(g);g.connect(ac.destination);
+  s.onended=function(){s.disconnect();g.disconnect();};
+  s.start();return;
+ }
+ var voice=templates[p].cloneNode(true);
+ voice.volume=.416;audioFallback.push(voice);
+ voice.play().catch(function(){});
+ voice.addEventListener('ended',function(){
+  var i=audioFallback.indexOf(voice);if(i>=0)audioFallback.splice(i,1);
+  voice.removeAttribute('src');voice.load();
+ },{once:true});
+}
+function hz(note){
+ var m=/^([A-G])(#?)([0-8])$/.exec(note);
+ if(!m)return 220;
+ var steps={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+ return 440*Math.pow(2,((Number(m[3])+1)*12+steps[m[1]]+(m[2]?1:0)-69)/12);
+}
+function synthetic(note,t,length,amp,attack,release,kind){
+ if(!ac||!orchestraBus)return;
+ // Layered low-pass oscillators are the immediate fallback while samples download.
+ var f=hz(note),end=t+length+release,env=ac.createGain(),filter=ac.createBiquadFilter();
+ var a=ac.createOscillator(),b=ac.createOscillator();
+ var bass=kind==='cello'||kind==='timpani';
+ filter.type='lowpass';filter.frequency.value=bass?570:kind==='harp'?1700:1150;
+ a.type=kind==='harp'?'sine':bass?'triangle':'sawtooth';
+ b.type='triangle';a.frequency.value=f;b.frequency.value=f;
+ b.detune.value=6;a.connect(filter);b.connect(filter);filter.connect(env);env.connect(orchestraBus);
+ var v=Math.max(.0001,amp*(kind==='timpani'?.24:.38));
+ env.gain.setValueAtTime(.00001,t);
+ env.gain.linearRampToValueAtTime(v,t+Math.max(.015,attack));
+ env.gain.setValueAtTime(v,t+Math.max(.05,length));
+ env.gain.exponentialRampToValueAtTime(.00001,end);
+ a.start(t);b.start(t);a.stop(end+.03);b.stop(end+.03);
+ var node={stop:function(when){try{a.stop(when);b.stop(when);}catch(e){}}};voices.push(node);
+ a.onended=function(){a.disconnect();b.disconnect();filter.disconnect();env.disconnect();};
+}
+function play(k,n,t,len,gain,attack,release){
+ if(!enabled.checked||!ac||ac.state!=='running')return;
+ if(players[k]){
+  try{
+   var v=players[k].play(n,t,{gain:gain,attack:attack,release:release,duration:len});
+   if(v&&v.stop)voices.push(v);
+   return;
+  }catch(error){console.warn('Using fallback for',k,n,error);}
+ }
+ synthetic(n,t,len,gain,attack,release,k);
+}
+function cancelVoices(){
+ if(!ac)return;
+ var cutoff=ac.currentTime+.04;
+ voices.splice(0).forEach(function(v){try{v.stop(cutoff);}catch(e){}});
+}
+function playBar(chord,barIndex,at,energy){
+ var depth=[.55,.78,1][energy];
+ // Every bar moves the harmony, rather than simply duplicating the plucked note.
+ chord.pad.forEach(function(n,i){
+  play('strings',n,at+.03*i,3.25,.14*depth,.42,1.2);
+ });
+ play('cello',chord.bass,at,2.95,.22*depth,.15,.9);
+ var harpCount=energy===0?2:4;
+ for(var i=0;i<harpCount;i++){
+  play('harp',chord.arp[i],at+.16+i*.67,1.55,.12*depth,.015,.62);
+ }
+ if(energy>=1){
+  var reply=chord.wind;
+  // A woodwind countermelody answers between the listener's plucks.
+  play('flute',reply[0],at+1.12,1.1,.077*depth,.18,.55);
+  play('flute',reply[1],at+2.18,.85,.067*depth,.13,.48);
+ }
+ if(energy>=2){
+  play('horn',chord.horn,at+.68,2.6,.105,.50,1.1);
+  chord.pad.forEach(function(n){play('tremolo',n,at+.25,2.55,.064,.65,1.25);});
+  if(barIndex===5||barIndex%4===0)play('timpani',chord.bass,at,.95,.22,.025,.65);
+ }
+}
+function cleanTimers(){
+ if(barTimer){clearTimeout(barTimer);barTimer=null;}
+ if(endTimer){clearTimeout(endTimer);endTimer=null;}
+ if(doneTimer){clearTimeout(doneTimer);doneTimer=null;}
+}
+function nextBar(id){
+ if(!active||id!==session||ending)return;
+ var idle=performance.now()-lastInput;
+ if(idle>3400){startFinale();return;}
+ var energy=(notesPlayed>=10||barsPlayed>=5)?2:(notesPlayed>=4||barsPlayed>=2)?1:0;
+ describe(energy);
+ var chord=chords[barsPlayed%chords.length],at=ac.currentTime+.08;
+ playBar(chord,barsPlayed,at,energy);
+ barsPlayed++;
+ barTimer=setTimeout(function(){nextBar(id);},BAR*1000);
+}
+function begin(){
+ cleanTimers();cancelVoices();
+ session++;active=true;ending=false;notesPlayed=0;barsPlayed=0;startedAt=performance.now();
+ lastInput=performance.now();describe(0);
+ nextBar(session);
+ var id=session;
+ function check(){
+  if(id!==session||!active||ending)return;
+  if(performance.now()-lastInput>=3900)startFinale();
+  else endTimer=setTimeout(check,400);
+ }
+ endTimer=setTimeout(check,400);
+}
+function startFinale(){
+ if(!ac||!enabled.checked)return;
+ if(!active&&!ending)return;
+ cleanTimers();
+ if(ending)return;
+ ending=true;active=false;describe(3);
+ show('The orchestra gathers for a final cadence…');
+ var at=ac.currentTime+.15;
+ // An F–G–C cadence creates the emotional ending even when the soloist stops.
+ function cadence(chord,offset,duration,power){
+  var t=at+offset;
+  chord.pad.forEach(function(n,i){play('strings',n,t+.07*i,duration,.18*power,.65,1.9);});
+  play('cello',chord.bass,t,duration-.4,.24*power,.18,1.1);
+  if(power>.65){
+   play('horn',chord.horn,t+.36,duration-.4,.18*power,.55,1.4);
+   play('tremolo',chord.pad[1],t+.2,duration-.45,.08*power,.7,1.8);
+  }
+ }
+ cadence(chords[1],0,2.2,.79);
+ play('flute','A4',at+.72,.88,.08,.14,.6);
+ cadence(chords[3],2.15,2.05,.95);
+ play('timpani','G2',at+2.18,1.25,.27,.025,.8);
+ play('harp','G4',at+3.37,.9,.12,.015,.7);
+ cadence(chords[0],4.2,5.1,1);
+ play('timpani','C3',at+4.2,1.5,.32,.025,1);
+ play('horn','E4',at+4.56,3.2,.14,.5,1.7);
+ ['C4','E4','G4','A4','G4','E4','C4'].forEach(function(n,i){
+  play('harp',n,at+4.55+i*.39,1.65,.12-i*.007,.01,.95);
+ });
+ play('flute','G4',at+5.2,2.8,.085,.48,1.5);
+ var id=session;
+ doneTimer=setTimeout(function(){
+  if(id!==session)return;
+  ending=false;active=false;describe(0);
+  stageName.textContent='An ending to remember';
+  stageHelp.textContent='Play again to begin a new orchestral journey.';
+  arc.style.width='100%';
+  show('The finale has finished. Play a letter to start again.');
+ },10500);
+}
+function keyPlayed(p,element){
+ if(!unlock())return;
+ gayageum(p);
+ lastLead=p;
+ if(enabled.checked){
+  if(!active){begin();}
+  notesPlayed++;lastInput=performance.now();
+  var energy=(notesPlayed>=10||barsPlayed>=5)?2:(notesPlayed>=4||barsPlayed>=2)?1:0;
+  describe(energy);
+  // Sparse sympathetic answering notes, not a one-to-one duplication.
+  if(energy>=1&&notesPlayed%3===0&&performance.now()-lastOrnament>650){
+    lastOrnament=performance.now();
+    var reply={G3:'E4',A3:'G4',C4:'A4',D4:'G4',E4:'C4',G4:'E4',A4:'G4'}[p];
+    play('flute',reply,ac.currentTime+.30,1.15,.055,.14,.72);
+  }
+ }else{
+  show('Only the gayageum is playing. Switch Orchestra on to add accompaniment.');
+ }
+ element.classList.add('active');
+ setTimeout(function(){element.classList.remove('active');},200);
+}
+btnEnable.addEventListener('click',function(){if(unlock())show('Sound enabled. Hover or tap the letters to lead the orchestra.');});
+keys.forEach(function(element){
+ var pitch=element.dataset.pitch;
+ element.addEventListener('pointerenter',function(e){if(e.pointerType==='mouse')keyPlayed(pitch,element);});
+ element.addEventListener('pointerdown',function(e){if(e.pointerType!=='mouse')keyPlayed(pitch,element);});
+ element.addEventListener('click',function(e){if(e.detail===0)keyPlayed(pitch,element);});
+});
+enabled.addEventListener('change',function(){
+ if(!enabled.checked){
+  cleanTimers();cancelVoices();active=false;ending=false;session++;
+  describe(0);show('Orchestra off. The gayageum remains playable.');
+ }else{
+  show('Orchestra on. Play any letter to begin a new arrangement.');
+ }
+});
+level.addEventListener('input',function(){
+ if(master&&ac)master.gain.setTargetAtTime(Number(level.value)/100,ac.currentTime,.06);
+});
+btnFinale.addEventListener('click',function(){
+ if(!unlock())return;
+ if(!enabled.checked)enabled.checked=true;
+ if(!active&&!ending){begin();notesPlayed=12;}
+ startFinale();
+});
+document.addEventListener('visibilitychange',function(){
+ if(document.hidden){cleanTimers();cancelVoices();active=false;ending=false;session++;}
+});
+})();
+</script>
+</body>
+</html>
