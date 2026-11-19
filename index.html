@@ -498,17 +498,36 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
    },{signal:signal});
    zones.appendChild(key);
   });
-  // Play on touch release so iOS can authorize audio on the first tap.
+  var playedTouches=new Set();
+  function touchKey(touch){
+   var key=touch.target.closest('.dpnco-gayageum-zone');
+   return key&&zones.contains(key)?key:null;
+  }
+  zones.addEventListener('touchstart',function(e){
+   if(!soundEnabled()||!context||context.state!=='running')return;
+   for(var i=0;i<e.changedTouches.length;i++){
+    var touch=e.changedTouches[i];
+    var key=touchKey(touch);
+    var pitch=key&&pitches[Number(key.getAttribute('data-note-index'))];
+    if(pitch&&buffers[pitch]){
+     playNote(pitch);
+     playedTouches.add(touch.identifier);
+    }
+   }
+  },{passive:true,signal:signal});
+  // If audio was still locked at contact, use the trusted release gesture.
   zones.addEventListener('touchend',function(e){
    for(var i=0;i<e.changedTouches.length;i++){
     var touch=e.changedTouches[i];
-    var target=document.elementFromPoint(touch.clientX,touch.clientY);
-    var key=target&&target.closest&&target.closest('.dpnco-gayageum-zone');
-    if(key&&zones.contains(key)&&key.contains(touch.target)){
-     var noteIndex=Number(key.getAttribute('data-note-index'));
-     if(pitches[noteIndex])playNote(pitches[noteIndex]);
+    if(playedTouches.delete(touch.identifier))continue;
+    var key=touchKey(touch);
+    if(key&&key.contains(document.elementFromPoint(touch.clientX,touch.clientY))){
+     playNote(pitches[Number(key.getAttribute('data-note-index'))]);
     }
    }
+  },{passive:true,signal:signal});
+  zones.addEventListener('touchcancel',function(e){
+   for(var i=0;i<e.changedTouches.length;i++)playedTouches.delete(e.changedTouches[i].identifier);
   },{passive:true,signal:signal});
   logo.appendChild(zones);logo.classList.add('dpnco-wordmark-ready');
   function turnOffIfNeeded(e){
