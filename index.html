@@ -661,10 +661,32 @@ function init(){
   controlsTimer=setTimeout(function(){contact.classList.remove('dpnco-controls-visible');},3000);
  }
  var controlActivityOptions={capture:true,passive:true,signal:signal};
- ['pointermove','pointerdown','touchstart','touchmove'].forEach(function(type){
-  window.addEventListener(type,revealControls,controlActivityOptions);
- });
+ function inControlsZone(y){
+  return y>=link.getBoundingClientRect().top-16&&y<=contact.getBoundingClientRect().bottom;
+ }
+ function revealFromPointer(e){
+  if(e.pointerType!=='touch'&&inControlsZone(e.clientY))revealControls();
+ }
+ window.addEventListener('pointermove',revealFromPointer,controlActivityOptions);
+ window.addEventListener('pointerdown',revealFromPointer,controlActivityOptions);
+ window.addEventListener('touchstart',function(e){
+  for(var i=0;i<e.changedTouches.length;i++){
+   if(inControlsZone(e.changedTouches[i].clientY)){
+    revealControls();
+    return;
+   }
+  }
+ },controlActivityOptions);
  contact.addEventListener('focusin',revealControls,{signal:signal});
+
+ // Briefly show the controls once per browsing session so visitors can find them.
+ var needsIntroduction=true;
+ try{
+  var introductionKey='dpnco-controls-introduced';
+  needsIntroduction=!window.sessionStorage.getItem(introductionKey);
+  if(needsIntroduction)window.sessionStorage.setItem(introductionKey,'1');
+ }catch(e){/* The one-time hint is still available when storage is blocked. */}
+ if(needsIntroduction)revealControls();
 var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var completedWords=0,requestedWords=0,sequenceRunning=false,wordAnimation=null,sequenceEpoch=0;
  var founderNote=hero.querySelector('.dpnco-hero-note'),founderPhase='motto',founderFadeTimer=null,founderPauseTimer=null,founderIdleTimer=null,founderIsFinal=false;
