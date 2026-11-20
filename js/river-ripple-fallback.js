@@ -66,7 +66,8 @@
             const sx = Math.max(0, Math.min(width - 1, Math.round(x + normalX * slope * 3)));
             const sy = Math.max(0, Math.min(height - 1, Math.round(y + normalY * slope * 3 * projectionY)));
             const target = (y * width + x) * 4, source = (sy * width + sx) * 4;
-            const light = (-normalX * .36 + normalY * .92) * slope * (8 + 55 * rim);
+            let light = (-normalX * .36 + normalY * .92) * slope * (8 + 55 * rim);
+            if (wave.rain) light *= light > 0 ? 1.8 : .2;
             const alpha = Math.min(215, Math.abs(slope) * (110 + 95 * rim));
             if (alpha < pixels[target + 3]) continue;
             pixels[target] = input[source] + light;
