@@ -219,8 +219,8 @@ function isDataUri(url) {
 
 var config = loadConfig();
 var transparentPixels = createImageData(32, 32);
-var rainLifetimeMs = 1500;
-var maxRainDrops = 28; // Room for overlapping automatic rain ripples.
+var rainLifetimeMs = 3000;
+var maxRainDrops = 12; // One drop every 255ms, with up to three seconds visible.
 
 // Extend the css
 $('head').prepend('<style>.jquery-ripples { position: relative; z-index: 0; }</style>');
@@ -493,7 +493,6 @@ Ripples.prototype = {
 		bindTexture(this.textures[0], 1);
 
 		gl.uniform1f(this.renderProgram.locations.perturbance, this.perturbance);
-		gl.uniform1f(this.renderProgram.locations.rainViewportWidth, this.$el.innerWidth());
 		gl.uniform1f(this.renderProgram.locations.rimStrength, this.rimStrength);
 		gl.uniform2fv(this.renderProgram.locations.topLeft, this.renderProgram.uniforms.topLeft);
 		gl.uniform2fv(this.renderProgram.locations.bottomRight, this.renderProgram.uniforms.bottomRight);
@@ -740,7 +739,6 @@ Ripples.prototype = {
 			'uniform vec2 delta;',
 
 			'uniform float perturbance;',
-			'uniform float rainViewportWidth;',
 			'uniform float rimStrength;',
 			'uniform vec4 rainDrops[' + maxRainDrops + '];',
 			'uniform int rainCount;',
@@ -755,7 +753,6 @@ Ripples.prototype = {
 				'vec3 dx = vec3(delta.x, heightX - height, 0.0);',
 				'vec3 dy = vec3(0.0, heightY - height, delta.y);',
 				'vec2 offset = -normalize(cross(dy, dx)).xz;',
-				'float rainShade = 0.0;',
 				'if (rainCount > 0) {',
 					'vec2 rainSlope = vec2(0.0);',
 					'for (int i = 0; i < ' + maxRainDrops + '; i++) {',
@@ -766,19 +763,17 @@ Ripples.prototype = {
 						'float extent = rain.z + 8.0;',
 						'if (abs(direction.x) > extent || abs(direction.y) > extent) continue;',
 						'float radius = length(direction);',
-						'float phase = (rain.z - radius + 8.0) / (rainViewportWidth >= 1024.0 ? 32.0 + 10.0 * rain.w : 38.0 + 15.0 * rain.w);',
+						'float phase = (rain.z - radius + 8.0) / (20.0 + 9.0 * rain.w);',
 						'if (phase <= 0.0 || phase >= 1.0) continue;',
-						'float fade = (1.0 - smoothstep(' + (rainLifetimeMs / 1000 * 0.7).toFixed(2) + ', ' + (rainLifetimeMs / 1000).toFixed(2) + ', rain.w)) / (1.0 + 0.75 * rain.w);',
-						'float slope = (rainViewportWidth >= 1024.0 ? -0.90 : 1.45) * sin(phase * 18.849556) * pow(max(0.0, sin(fract(phase * 3.0) * 3.141593)), 3.0) * pow(0.89, floor(phase * 3.0)) * fade;',
+						'float fade = (1.0 - smoothstep(2.1, 3.0, rain.w)) / (1.0 + 0.75 * rain.w);',
+						'float slope = 1.45 * sin(phase * 12.56637) * sin(phase * 3.14159) * fade;',
 						'rainSlope += direction * (slope / max(1.0, radius));',
 					'}',
-					'float crestLight = clamp(dot(rainSlope, vec2(-0.6, 0.8)), -1.0, 1.0);',
-					'rainShade = max(crestLight, 0.0) * 0.18 + min(crestLight, 0.0) * 0.012;',
 					'vec2 surfaceSlope = vec2(dx.y, dy.y) / delta + rainSlope;',
 					'offset = normalize(vec3(surfaceSlope.x, 1.0, surfaceSlope.y)).xz;',
 				'}',
 				'float specular = pow(max(0.0, dot(offset, normalize(vec2(-0.6, 1.0)))), 4.0);',
-				'gl_FragColor = texture2D(samplerBackground, backgroundCoord + offset * perturbance) + vec4(vec3(specular * rimStrength + rainShade), 0.0);',
+				'gl_FragColor = texture2D(samplerBackground, backgroundCoord + offset * perturbance) + vec4(vec3(specular * rimStrength), 0.0);',
 			'}'
 		].join('\n'));
 		gl.uniform2fv(this.renderProgram.locations.delta, this.textureDelta);

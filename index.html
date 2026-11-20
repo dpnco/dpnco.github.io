@@ -190,11 +190,6 @@
     if(!disposed&&request===playRequest){soundOn=false;labels();}
    }
   }
-  var middleColumn=0;
-  function middlePosition(){
-   middleColumn=(middleColumn+1)%3;
-   return {x:0.07+(middleColumn+Math.random())*0.86/3,y:0.30+Math.random()*0.40};
-  }
   function position(){
    if(!cells.length){
     for(var i=0;i<cols*rows;i++)cells.push(i);
@@ -217,13 +212,11 @@
     if(water&&water.data('ripples')&&!water.data('ripples').context.isContextLost()){
      water.ripples('play');
      water.ripples('dropRain',point.x,point.y);
-     if(hero.clientWidth>=1024){var mid=middlePosition();water.ripples('dropRain',mid.x,mid.y);}
     }else if(hero.dpncoRippleFallback){
      hero.dpncoRippleFallback.dropRain(point.x,point.y);
-     if(hero.clientWidth>=1024){var center=middlePosition();hero.dpncoRippleFallback.dropRain(center.x,center.y);}
     }
    }
-   timer=setTimeout(drop,document.hidden?1000:(hero.clientWidth>=1024?114:128));hero.dpncoRainTimer=timer;
+   timer=setTimeout(drop,document.hidden?1000:255);hero.dpncoRainTimer=timer;
   }
   function findControl(e){
    var node=e.target&&e.target.closest?e.target.closest('[data-dpnco-rain-toggle],[data-dpnco-sound-toggle]'):null;
@@ -813,10 +806,10 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
    while(completedWords<requestedWords&&!disposed&&epoch===sequenceEpoch){
     placeWord(completedWords);
     var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
-    var frames=reduce?[{opacity:.40},{opacity:.40}]:[
+    var frames=reduce?[{opacity:.30},{opacity:.30}]:[
      {opacity:0,offset:0,easing:'ease-in-out'},
-     {opacity:.40,offset:3/8},
-     {opacity:.40,offset:5/8,easing:'ease-in-out'},
+     {opacity:.30,offset:3/8},
+     {opacity:.30,offset:5/8,easing:'ease-in-out'},
      {opacity:0,offset:1}
     ];
     wordAnimation=wordsWrap.animate(frames,{duration:8000,easing:'linear',fill:'forwards'});
@@ -885,21 +878,72 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var wasPortrait=portrait.matches;
  var layers=[
   {src:originalUrl,start:0,end:1},
-  {src:'images/dpnco-lineless-warm-water.jpg',start:.05,end:.18},
-  {src:'images/river-study/rain-gray.webp',start:.16,end:.32},
+  {src:'images/river-study/rain-gray.webp',start:.05,end:.18},
+  {src:'images/dpnco-lineless-warm-water.jpg',start:.16,end:.32},
   {src:'images/dpnco-lineless-cool-water.jpg',start:.30,end:.54},
   {src:'images/river-study/silver-reflection.webp',start:.52,end:.78},
   {src:'images/river-study/submerged-shore.webp',start:.76,end:.98}
  ];
  layers.forEach(function(layer){
   layer.image=new Image();
-  layer.image.onload=function(){lastPaintProgress=-1;update();};
+  layer.image.onload=function(){
+   lastPaintProgress=-1;update();
+  };
   layer.image.src=layer.src;
  });
+ var cloudCorner=null,cloudClock=0,lastCloudFrame=-1;
+ var reflectionPhoto=new Image();
+ reflectionPhoto.onload=function(){
+  var w=reflectionPhoto.naturalWidth,h=reflectionPhoto.naturalHeight;
+  cloudCorner=document.createElement('canvas');
+  cloudCorner.width=w;cloudCorner.height=h;
+  var corner=cloudCorner.getContext('2d');
+  corner.drawImage(reflectionPhoto,0,0);
+  var photo=corner.getImageData(0,0,w,h),pixels=photo.data;
+  for(var i=0;i<pixels.length;i+=4){
+   var tone=Math.max(0,Math.min(1,(.2126*pixels[i]+.7152*pixels[i+1]+.0722*pixels[i+2]-75)/171));
+   pixels[i]=36.04+216.96*tone;
+   pixels[i+1]=97.24+156.76*tone;
+   pixels[i+2]=142.8+112.2*tone;
+  }
+  corner.putImageData(photo,0,0);
+  corner.scale(w,h);
+  var fade=corner.createLinearGradient(.45,0,.55,.98);
+  fade.addColorStop(0,'rgba(0,0,0,.96)');fade.addColorStop(.55,'rgba(0,0,0,.91)');fade.addColorStop(1,'rgba(0,0,0,.76)');
+  corner.globalCompositeOperation='destination-in';corner.fillStyle=fade;corner.fillRect(0,0,1,1);
+  lastPaintProgress=-1;update();
+ };
+ reflectionPhoto.src='images/river-study/cloud-water.png?v=2';
  function cover(img){
-  var scale=Math.max(texture.width/img.naturalWidth,texture.height/img.naturalHeight);
+  var shore=img===layers[layers.length-1].image;
+  var scale=Math.max(texture.width/img.naturalWidth,texture.height/(img.naturalHeight*(shore ? .63 : 1)));
   var w=img.naturalWidth*scale,h=img.naturalHeight*scale;
-  ctx.drawImage(img,(texture.width-w)/2,(texture.height-h)/2,w,h);
+  if(img===layers[1].image){
+   ctx.save();
+   ctx.translate(texture.width,0);
+   ctx.scale(-1,1);
+   ctx.drawImage(img,(texture.width-w)/2,(texture.height-h)/2,w,h);
+   ctx.restore();
+   return;
+  }
+  ctx.drawImage(img,(texture.width-w)/2,shore ? texture.height-h : (texture.height-h)/2,w,h);
+  if(img===layers[4].image){
+   var lift=ctx.createLinearGradient(texture.width*.38,0,texture.width,0);
+   lift.addColorStop(0,'rgba(218,230,241,0)');
+   lift.addColorStop(.57,'rgba(218,230,241,.18)');
+   lift.addColorStop(1,'rgba(218,230,241,.38)');
+   ctx.fillStyle=lift;ctx.fillRect(0,0,texture.width,texture.height);
+  }
+  if(shore && cloudCorner){
+   var width=texture.width,height=texture.height;
+   var drift=.055*Math.sin(cloudClock/7000);
+   ctx.drawImage(cloudCorner,width*(-.06+drift),height*(-.02+.015*Math.sin(cloudClock/11000)),width*1.12,height*1.04);
+   ctx.save();ctx.scale(width,height*.76);
+   var sun=ctx.createRadialGradient(.04,0,0,.04,0,.62);
+   sun.addColorStop(0,'rgba(255,255,255,.98)');sun.addColorStop(.23,'white');sun.addColorStop(.44,'rgba(255,255,255,.72)');
+   sun.addColorStop(1,'rgba(255,255,255,0)');
+   ctx.fillStyle=sun;ctx.fillRect(0,0,1,1);ctx.restore();
+  }
  }
  function smooth(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);}
  function getWater(){return window.jQuery&&window.jQuery(hero).data('ripples');}
@@ -923,7 +967,11 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   var rect=hero.getBoundingClientRect();
   var scale=Math.min(window.matchMedia('(max-width:600px)').matches?1.25:1.5,1920/Math.max(1,rect.width,rect.height));
   var w=Math.max(1,Math.round(rect.width*scale)),h=Math.max(1,Math.round(rect.height*scale));
-  if(p===lastPaintProgress&&w===lastWidth&&h===lastHeight)return;
+  var drifting=cloudCorner && p>layers[layers.length-1].start && !reducedMotion.matches;
+  if(drifting)schedulePaint();
+  var cloudFrame=drifting ? Math.floor(now/100) : 0;
+  if(p===lastPaintProgress&&w===lastWidth&&h===lastHeight&&cloudFrame===lastCloudFrame)return;
+  lastCloudFrame=cloudFrame;cloudClock=cloudFrame*100;
   lastPaintProgress=p;lastWidth=w;lastHeight=h;
   if(texture.width!==w)texture.width=w;
   if(texture.height!==h)texture.height=h;
@@ -1115,8 +1163,8 @@ function buttonStaggerAnimation() {
 }
 buttonStaggerAnimation()
 </script>
-  <script src="js/jquery.ripples-angle.js?v=pearl-rain-3"></script>
-  <script src="js/river-ripple-fallback.js?v=pearl-rain-3"></script>
+  <script src="js/jquery.ripples-angle.js?v=shared-ripple-light"></script>
+  <script src="js/river-ripple-fallback.js?v=shared-ripple-light"></script>
   <script>
 try {
 $('.hero').ripples({
