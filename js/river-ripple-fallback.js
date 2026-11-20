@@ -35,6 +35,7 @@
       for (let i = waves.length - 1; i >= 0; i--) {
         if (now - waves[i].time >= waves[i].lifetime) waves.splice(i, 1);
       }
+      const desktop = hero.clientWidth >= 1024;
       for (const wave of waves) {
         const age = Math.max(0, (now - wave.time) / wave.lifetime);
         const expansion = wave.rain ? 1 - (1 - age) * (1 - age) : age;
@@ -42,7 +43,9 @@
         const fade = wave.rain ? (1 - fadeProgress * fadeProgress * (3 - 2 * fadeProgress)) / (1 + age) : 1 - age;
         const centerX = wave.x * width, centerY = wave.y * height;
         const outer = 2 + expansion * wave.reach;
-        const trailing = outer - 18;
+        const softCrest = desktop && wave.rain;
+        const band = softCrest ? 12 : 21;
+        const trailing = outer + 3 - band;
         const limit = outer + 3;
         const left = Math.max(0, Math.floor(centerX - limit));
         const right = Math.min(width - 1, Math.ceil(centerX + limit));
@@ -54,10 +57,10 @@
             const dx = x - centerX;
             const distance = Math.sqrt(dx * dx + dy * dy);
             if (distance < Math.max(1, trailing) || distance > limit) continue;
-            const phase = (outer - distance) / 21;
-            const envelope = Math.sin(Math.PI * (phase + 3 / 21));
+            const phase = (outer - distance) / band;
+            const envelope = Math.sin(Math.PI * (phase + 3 / band));
             const amplitude = envelope * fade * wave.strength;
-            const slope = Math.sin(phase * Math.PI * 7) * amplitude * wave.contribution;
+            const slope = Math.sin(phase * Math.PI * 7) * amplitude * wave.contribution * (softCrest ? -.7 : 1);
             const normalX = dx / distance, normalY = dy / distance;
             const sx = Math.max(0, Math.min(width - 1, Math.round(x + normalX * slope * 3)));
             const sy = Math.max(0, Math.min(height - 1, Math.round(y + normalY * slope * 3 * projectionY)));
@@ -80,7 +83,7 @@
       if (!input || signal.aborted || x < 0 || x > 1 || y < 0 || y > 1) return;
       const reach = Math.min(surface.width, surface.height) * (.11 + .05 * strength) * (rain ? 1.65 : 1);
       waves.push({x, y, strength, reach, rain, contribution, lifetime: rain ? 1500 : 1150, time: performance.now()});
-      if (waves.length > 26) waves.shift();
+      if (waves.length > 32) waves.shift();
       if (!frame) frame = requestAnimationFrame(render);
     }
 

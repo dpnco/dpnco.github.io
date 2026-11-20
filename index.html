@@ -223,7 +223,7 @@
      if(hero.clientWidth>=1024){var center=middlePosition();hero.dpncoRippleFallback.dropRain(center.x,center.y);}
     }
    }
-   timer=setTimeout(drop,document.hidden?1000:128);hero.dpncoRainTimer=timer;
+   timer=setTimeout(drop,document.hidden?1000:(hero.clientWidth>=1024?114:128));hero.dpncoRainTimer=timer;
   }
   function findControl(e){
    var node=e.target&&e.target.closest?e.target.closest('[data-dpnco-rain-toggle],[data-dpnco-sound-toggle]'):null;
@@ -1115,8 +1115,8 @@ function buttonStaggerAnimation() {
 }
 buttonStaggerAnimation()
 </script>
-  <script src="js/jquery.ripples-angle.js?v=desktop-paired-rain"></script>
-  <script src="js/river-ripple-fallback.js?v=rain-1500ms"></script>
+  <script src="js/jquery.ripples-angle.js?v=soft-crest-1"></script>
+  <script src="js/river-ripple-fallback.js?v=soft-crest-1"></script>
   <script>
 try {
 $('.hero').ripples({

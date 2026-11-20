@@ -220,7 +220,7 @@ function isDataUri(url) {
 var config = loadConfig();
 var transparentPixels = createImageData(32, 32);
 var rainLifetimeMs = 1500;
-var maxRainDrops = 24; // Room for overlapping automatic rain ripples.
+var maxRainDrops = 28; // Room for overlapping automatic rain ripples.
 
 // Extend the css
 $('head').prepend('<style>.jquery-ripples { position: relative; z-index: 0; }</style>');
@@ -766,13 +766,13 @@ Ripples.prototype = {
 						'float extent = rain.z + 8.0;',
 						'if (abs(direction.x) > extent || abs(direction.y) > extent) continue;',
 						'float radius = length(direction);',
-						'float phase = (rain.z - radius + 8.0) / (20.0 + 9.0 * rain.w);',
+						'float phase = (rain.z - radius + 8.0) / (rainViewportWidth >= 1024.0 ? 11.0 + 4.0 * rain.w : 20.0 + 9.0 * rain.w);',
 						'if (phase <= 0.0 || phase >= 1.0) continue;',
 						'float fade = (1.0 - smoothstep(' + (rainLifetimeMs / 1000 * 0.7).toFixed(2) + ', ' + (rainLifetimeMs / 1000).toFixed(2) + ', rain.w)) / (1.0 + 0.75 * rain.w);',
-						'float slope = 1.45 * sin(phase * 12.56637) * sin(phase * 3.14159) * fade;',
+						'float slope = (rainViewportWidth >= 1024.0 ? -0.90 : 1.45) * sin(phase * 12.56637) * sin(phase * 3.14159) * fade;',
 						'rainSlope += direction * (slope / max(1.0, radius));',
 					'}',
-					'if (rainViewportWidth >= 1024.0) rainShade = clamp(dot(rainSlope, vec2(-0.6, 0.8)), -1.0, 1.0) * 0.085;',
+					'if (rainViewportWidth >= 1024.0) rainShade = clamp(dot(rainSlope, vec2(-0.6, 0.8)), -1.0, 1.0) * 0.045;',
 					'vec2 surfaceSlope = vec2(dx.y, dy.y) / delta + rainSlope;',
 					'offset = normalize(vec3(surfaceSlope.x, 1.0, surfaceSlope.y)).xz;',
 				'}',
