@@ -220,7 +220,7 @@ function isDataUri(url) {
 var config = loadConfig();
 var transparentPixels = createImageData(32, 32);
 var rainLifetimeMs = 1500;
-var maxRainDrops = 12; // Room for overlapping automatic rain ripples.
+var maxRainDrops = 24; // Room for overlapping automatic rain ripples.
 
 // Extend the css
 $('head').prepend('<style>.jquery-ripples { position: relative; z-index: 0; }</style>');
@@ -493,6 +493,7 @@ Ripples.prototype = {
 		bindTexture(this.textures[0], 1);
 
 		gl.uniform1f(this.renderProgram.locations.perturbance, this.perturbance);
+		gl.uniform1f(this.renderProgram.locations.rainViewportWidth, this.$el.innerWidth());
 		gl.uniform1f(this.renderProgram.locations.rimStrength, this.rimStrength);
 		gl.uniform2fv(this.renderProgram.locations.topLeft, this.renderProgram.uniforms.topLeft);
 		gl.uniform2fv(this.renderProgram.locations.bottomRight, this.renderProgram.uniforms.bottomRight);
@@ -739,6 +740,7 @@ Ripples.prototype = {
 			'uniform vec2 delta;',
 
 			'uniform float perturbance;',
+			'uniform float rainViewportWidth;',
 			'uniform float rimStrength;',
 			'uniform vec4 rainDrops[' + maxRainDrops + '];',
 			'uniform int rainCount;',
@@ -753,6 +755,7 @@ Ripples.prototype = {
 				'vec3 dx = vec3(delta.x, heightX - height, 0.0);',
 				'vec3 dy = vec3(0.0, heightY - height, delta.y);',
 				'vec2 offset = -normalize(cross(dy, dx)).xz;',
+				'float rainShade = 0.0;',
 				'if (rainCount > 0) {',
 					'vec2 rainSlope = vec2(0.0);',
 					'for (int i = 0; i < ' + maxRainDrops + '; i++) {',
@@ -769,11 +772,12 @@ Ripples.prototype = {
 						'float slope = 1.45 * sin(phase * 12.56637) * sin(phase * 3.14159) * fade;',
 						'rainSlope += direction * (slope / max(1.0, radius));',
 					'}',
+					'if (rainViewportWidth >= 1024.0) rainShade = clamp(dot(rainSlope, vec2(-0.6, 0.8)), -1.0, 1.0) * 0.085;',
 					'vec2 surfaceSlope = vec2(dx.y, dy.y) / delta + rainSlope;',
 					'offset = normalize(vec3(surfaceSlope.x, 1.0, surfaceSlope.y)).xz;',
 				'}',
 				'float specular = pow(max(0.0, dot(offset, normalize(vec2(-0.6, 1.0)))), 4.0);',
-				'gl_FragColor = texture2D(samplerBackground, backgroundCoord + offset * perturbance) + vec4(vec3(specular * rimStrength), 0.0);',
+				'gl_FragColor = texture2D(samplerBackground, backgroundCoord + offset * perturbance) + vec4(vec3(specular * rimStrength + rainShade), 0.0);',
 			'}'
 		].join('\n'));
 		gl.uniform2fv(this.renderProgram.locations.delta, this.textureDelta);
