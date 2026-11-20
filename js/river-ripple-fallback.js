@@ -44,7 +44,7 @@
         const centerX = wave.x * width, centerY = wave.y * height;
         const outer = 2 + expansion * wave.reach;
         const softCrest = desktop && wave.rain;
-        const band = wave.rain ? (desktop ? 18 : 24) : 21;
+        const band = wave.rain ? (desktop ? 29 : 32) : 21;
         const trailing = outer + 3 - band;
         const limit = outer + 3;
         const left = Math.max(0, Math.floor(centerX - limit));
@@ -59,7 +59,7 @@
             if (distance < Math.max(1, trailing) || distance > limit) continue;
             const phase = (outer - distance) / band;
             const cycles = Math.min(3, Math.max(0, (phase + 3 / band) * 3));
-            const envelope = wave.rain ? Math.sin(Math.PI * (cycles % 1)) * Math.pow(.72, Math.floor(cycles)) : Math.sin(Math.PI * (phase + 3 / band));
+            const envelope = wave.rain ? Math.pow(Math.sin(Math.PI * (cycles % 1)), 3) * Math.pow(.89, Math.floor(cycles)) : Math.sin(Math.PI * (phase + 3 / band));
             const amplitude = envelope * fade * wave.strength;
             const slope = Math.sin(wave.rain ? cycles * 2 * Math.PI : phase * Math.PI * 7) * amplitude * wave.contribution * (softCrest ? -.7 : 1);
             const normalX = dx / distance, normalY = dy / distance;
