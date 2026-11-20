@@ -219,8 +219,8 @@ function isDataUri(url) {
 
 var config = loadConfig();
 var transparentPixels = createImageData(32, 32);
-var rainLifetimeMs = 3000;
-var maxRainDrops = 12; // One drop every 255ms, with up to three seconds visible.
+var rainLifetimeMs = 1500;
+var maxRainDrops = 12; // Room for overlapping automatic rain ripples.
 
 // Extend the css
 $('head').prepend('<style>.jquery-ripples { position: relative; z-index: 0; }</style>');
@@ -765,7 +765,7 @@ Ripples.prototype = {
 						'float radius = length(direction);',
 						'float phase = (rain.z - radius + 8.0) / (20.0 + 9.0 * rain.w);',
 						'if (phase <= 0.0 || phase >= 1.0) continue;',
-						'float fade = (1.0 - smoothstep(2.1, 3.0, rain.w)) / (1.0 + 0.75 * rain.w);',
+						'float fade = (1.0 - smoothstep(' + (rainLifetimeMs / 1000 * 0.7).toFixed(2) + ', ' + (rainLifetimeMs / 1000).toFixed(2) + ', rain.w)) / (1.0 + 0.75 * rain.w);',
 						'float slope = 1.45 * sin(phase * 12.56637) * sin(phase * 3.14159) * fade;',
 						'rainSlope += direction * (slope / max(1.0, radius));',
 					'}',

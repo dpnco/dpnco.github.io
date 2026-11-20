@@ -216,7 +216,7 @@
      hero.dpncoRippleFallback.dropRain(point.x,point.y);
     }
    }
-   timer=setTimeout(drop,document.hidden?1000:255);hero.dpncoRainTimer=timer;
+   timer=setTimeout(drop,document.hidden?1000:128);hero.dpncoRainTimer=timer;
   }
   function findControl(e){
    var node=e.target&&e.target.closest?e.target.closest('[data-dpnco-rain-toggle],[data-dpnco-sound-toggle]'):null;
@@ -1108,8 +1108,8 @@ function buttonStaggerAnimation() {
 }
 buttonStaggerAnimation()
 </script>
-  <script src="js/jquery.ripples-angle.js?v=shared-ripple-light"></script>
-  <script src="js/river-ripple-fallback.js?v=shared-ripple-light"></script>
+  <script src="js/jquery.ripples-angle.js?v=rain-1500ms"></script>
+  <script src="js/river-ripple-fallback.js?v=rain-1500ms"></script>
   <script>
 try {
 $('.hero').ripples({

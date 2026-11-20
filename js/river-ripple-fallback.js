@@ -79,7 +79,7 @@
     function drop(x, y, strength, rain = false, contribution = 1) {
       if (!input || signal.aborted || x < 0 || x > 1 || y < 0 || y > 1) return;
       const reach = Math.min(surface.width, surface.height) * (.11 + .05 * strength) * (rain ? 1.65 : 1);
-      waves.push({x, y, strength, reach, rain, contribution, lifetime: rain ? 3000 : 1150, time: performance.now()});
+      waves.push({x, y, strength, reach, rain, contribution, lifetime: rain ? 1500 : 1150, time: performance.now()});
       if (waves.length > 26) waves.shift();
       if (!frame) frame = requestAnimationFrame(render);
     }
