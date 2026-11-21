@@ -902,9 +902,9 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   var photo=corner.getImageData(0,0,w,h),pixels=photo.data;
   for(var i=0;i<pixels.length;i+=4){
    var tone=Math.max(0,Math.min(1,(.2126*pixels[i]+.7152*pixels[i+1]+.0722*pixels[i+2]-75)/171));
-   pixels[i]=36.04+216.96*tone;
-   pixels[i+1]=97.24+156.76*tone;
-   pixels[i+2]=142.8+112.2*tone;
+   pixels[i]=25.228+227.772*tone;
+   pixels[i+1]=68.068+185.932*tone;
+   pixels[i+2]=99.96+155.04*tone;
   }
   corner.putImageData(photo,0,0);
   corner.scale(w,h);
@@ -937,7 +937,7 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   if(shore && cloudCorner){
    var width=texture.width,height=texture.height;
    var drift=.055*Math.sin(cloudClock/7000);
-   ctx.drawImage(cloudCorner,width*(-.06+drift),height*(-.02+.015*Math.sin(cloudClock/11000)),width*1.12,height*1.04);
+   ctx.drawImage(cloudCorner,width*(-.155+drift),height*(-.12+.015*Math.sin(cloudClock/11000)),width*1.22,height*1.15);
    ctx.save();ctx.scale(width,height*.76);
    var sun=ctx.createRadialGradient(.04,0,0,.04,0,.62);
    sun.addColorStop(0,'rgba(255,255,255,.98)');sun.addColorStop(.23,'white');sun.addColorStop(.44,'rgba(255,255,255,.72)');
