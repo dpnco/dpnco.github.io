@@ -92,7 +92,7 @@
     }
     hero.addEventListener('pointerdown', function (event) {
       const mouse = event.pointerType === 'mouse';
-      point(event, mouse ? .86 : 1, mouse ? Math.sqrt(.8) * .67 : 1);
+      point(event, mouse ? .86 : 1, mouse ? Math.sqrt(.8) * .50 : 1);
     }, {passive: true, signal});
     hero.addEventListener('pointermove', function (event) {
       if (event.pointerType !== 'mouse' || performance.now() - lastMove < 55) return;
