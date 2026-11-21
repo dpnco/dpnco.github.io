@@ -219,8 +219,8 @@ function isDataUri(url) {
 
 var config = loadConfig();
 var transparentPixels = createImageData(32, 32);
-var rainLifetimeMs = 3000;
-var maxRainDrops = 12; // One drop every 255ms, with up to three seconds visible.
+var rainLifetimeMs = 2000;
+var maxRainDrops = 12; // One drop every 255ms, with up to two seconds visible.
 
 // Extend the css
 $('head').prepend('<style>.jquery-ripples { position: relative; z-index: 0; }</style>');
