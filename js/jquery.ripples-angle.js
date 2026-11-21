@@ -248,6 +248,7 @@ var Ripples = function (el, options) {
 
 	this.perturbance = options.perturbance;
 	this.dropRadius = options.dropRadius;
+	this.mouseImpactStrength = options.mouseImpactStrength;
 
 	this.crossOrigin = options.crossOrigin;
 	this.imageUrl = options.imageUrl;
@@ -350,6 +351,7 @@ var Ripples = function (el, options) {
 
 Ripples.DEFAULTS = {
 	damping: 0.995,
+	mouseImpactStrength: 0.114,
 	imageUrl: null,
 	resolution: 256,
 	dropRadius: 20,
@@ -375,7 +377,7 @@ Ripples.prototype = {
 				that.dropAtPointer(
 					pointer,
 					that.dropRadius * (big ? 1.5 : 1),
-					mouseDrop ? 0.114 : (big ? 0.14 : 0.01)
+					mouseDrop ? that.mouseImpactStrength : (big ? 0.14 : 0.01)
 				);
 			}
 		}
