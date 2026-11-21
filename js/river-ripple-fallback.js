@@ -41,9 +41,10 @@
         const fadeProgress = Math.max(0, (age - .55) / .45);
         const fade = wave.rain ? (1 - fadeProgress * fadeProgress * (3 - 2 * fadeProgress)) / (1 + age) : (1 - age) ** 2 * (1 + 2 * age);
         const centerX = wave.x * width, centerY = wave.y * height;
-        const outer = 2 + expansion * wave.reach;
-        const trailing = outer - 18;
-        const limit = outer + 3;
+        const radiusScale = wave.rain ? .33 : 1;
+        const outer = (2 + expansion * wave.reach) * radiusScale;
+        const trailing = outer - 18 * radiusScale;
+        const limit = outer + 3 * radiusScale;
         const left = Math.max(0, Math.floor(centerX - limit));
         const right = Math.min(width - 1, Math.ceil(centerX + limit));
         const top = Math.max(0, Math.floor(centerY - limit * projectionY));
@@ -54,7 +55,7 @@
             const dx = x - centerX;
             const distance = Math.sqrt(dx * dx + dy * dy);
             if (distance < Math.max(1, trailing) || distance > limit) continue;
-            const phase = (outer - distance) / 21;
+            const phase = (outer - distance) / (21 * radiusScale);
             const envelope = Math.sin(Math.PI * (phase + 3 / 21));
             const amplitude = envelope * fade * wave.strength;
             const slope = Math.sin(phase * Math.PI * 7) * amplitude * wave.contribution;
