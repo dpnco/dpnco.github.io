@@ -327,8 +327,8 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
     position=target;velocity=0;move(position);frame=null;last=0;return;
    }
    // Acceleration-limited easing: no sudden first-frame leap or spring overshoot.
-   var desiredVelocity=Math.sign(difference)*Math.min(110,Math.abs(difference)*1.55);
-   var acceleration=1-Math.exp(-dt/430);
+   var desiredVelocity=Math.sign(difference)*Math.min(70,Math.abs(difference)*1.2);
+   var acceleration=1-Math.exp(-dt/520);
    velocity+=(desiredVelocity-velocity)*acceleration;
    var movement=velocity*dt/1000;
    if(Math.abs(movement)>Math.abs(difference)){movement=difference;velocity=0;}
@@ -345,7 +345,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
    target=clamp(target+amount,Math.max(0,position-130),Math.min(limit(),position+130));
    if(target!==previousTarget)window.dispatchEvent(new CustomEvent('dpncoscrollintent',{detail:target-previousTarget}));
    if(frame===null&&target!==position){
-    last=0;startAfter=performance.now()+420;
+    last=0;startAfter=performance.now()+500;
     frame=requestAnimationFrame(animate);
    }
   }
@@ -366,7 +366,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
    // If the browser disallows cancellation, never fight its native scrolling.
    if(!e.cancelable){stop();return;}
    e.preventDefault();
-   queueScroll(clamp(delta*.23,-23,23));
+   queueScroll(clamp(delta*.15,-15,15));
   },{passive:false,signal:signal});
   window.addEventListener('scroll',function(){
    if(frame===null){position=window.scrollY;target=position;}
@@ -378,7 +378,7 @@ body {scroll-snap-type:none!important;overscroll-behavior-y:none;}
   window.dpncoScrollController={
    moveTouch:function(delta){
     if(reduced.matches||!delta)return false;
-    queueScroll(clamp(delta*.34,-29,29));
+    queueScroll(clamp(delta*.22,-19,19));
     return true;
    },
    dispose:function(){disposed=true;stop();events.abort();}
@@ -957,8 +957,13 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   var range=scrollRange(),target=Math.max(0,Math.min(1,window.scrollY/range));
   var elapsed=lastPaintTime===null?1000/60:Math.min(64,Math.max(0,now-lastPaintTime));
   // Ease the water behind the scroll position, including on native touch scroll.
-  var p=shownProgress===null||reducedMotion.matches?target:
-   shownProgress+(target-shownProgress)*(1-Math.exp(-elapsed/420));
+  var p=target;
+  if(shownProgress!==null&&!reducedMotion.matches){
+   var remaining=target-shownProgress;
+   // Limit how quickly the reflection can move, including during a native touch fling.
+   var step=Math.min(Math.abs(remaining)*(1-Math.exp(-elapsed/600)),elapsed*.00018);
+   p=shownProgress+Math.sign(remaining)*step;
+  }
   if(Math.abs(target-p)*range<.35)p=target;
   shownProgress=p;
   lastPaintTime=p===target?null:now;
