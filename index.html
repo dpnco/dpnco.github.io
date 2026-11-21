@@ -937,7 +937,16 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   if(shore && cloudCorner){
    var width=texture.width,height=texture.height;
    var drift=.055*Math.sin(cloudClock/7000);
-   ctx.drawImage(cloudCorner,width*(-.155+drift),height*(-.12+.015*Math.sin(cloudClock/11000)),width*1.22,height*1.15);
+   var reflectionY=height*(-.12+.015*Math.sin(cloudClock/11000));
+   var reflectionHeight=height*1.15;
+   if(portrait.matches && window.innerWidth<=767){
+    // Crop the landscape photo to the tall viewport without stretching the clouds.
+    var reflectionWidth=reflectionHeight*cloudCorner.width/cloudCorner.height;
+    var cropOffset=(width-reflectionWidth)*.57+width*drift;
+    ctx.drawImage(cloudCorner,cropOffset,reflectionY,reflectionWidth,reflectionHeight);
+   }else{
+    ctx.drawImage(cloudCorner,width*(-.155+drift),reflectionY,width*1.22,reflectionHeight);
+   }
    ctx.save();ctx.scale(width,height*.76);
    var sun=ctx.createRadialGradient(.04,0,0,.04,0,.62);
    sun.addColorStop(0,'rgba(255,255,255,.98)');sun.addColorStop(.23,'white');sun.addColorStop(.44,'rgba(255,255,255,.72)');
