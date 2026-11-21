@@ -37,9 +37,9 @@
       }
       for (const wave of waves) {
         const age = Math.max(0, (now - wave.time) / wave.lifetime);
-        const expansion = wave.rain ? 1 - (1 - age) * (1 - age) : age;
+        const expansion = wave.rain ? 1 - (1 - age) * (1 - age) : age * wave.lifetime / 1150;
         const fadeProgress = Math.max(0, (age - .55) / .45);
-        const fade = wave.rain ? (1 - fadeProgress * fadeProgress * (3 - 2 * fadeProgress)) / (1 + age) : 1 - age;
+        const fade = wave.rain ? (1 - fadeProgress * fadeProgress * (3 - 2 * fadeProgress)) / (1 + age) : (1 - age) ** 2 * (1 + 2 * age);
         const centerX = wave.x * width, centerY = wave.y * height;
         const outer = 2 + expansion * wave.reach;
         const trailing = outer - 18;
@@ -79,7 +79,7 @@
     function drop(x, y, strength, rain = false, contribution = 1) {
       if (!input || signal.aborted || x < 0 || x > 1 || y < 0 || y > 1) return;
       const reach = Math.min(surface.width, surface.height) * (.11 + .05 * strength) * (rain ? 1.65 : 1);
-      waves.push({x, y, strength, reach, rain, contribution, lifetime: rain ? 2000 : 1150, time: performance.now()});
+      waves.push({x, y, strength, reach, rain, contribution, lifetime: rain ? 2000 : 4000, time: performance.now()});
       if (waves.length > 26) waves.shift();
       if (!frame) frame = requestAnimationFrame(render);
     }

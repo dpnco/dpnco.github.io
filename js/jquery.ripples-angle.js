@@ -238,6 +238,9 @@ var Ripples = function (el, options) {
 	this.resolution = options.resolution;
 	this.projectionY = options.projectionY || 1;
 	this.damping = options.damping;
+	this.pointerFadeMs = options.pointerFadeMs || 0;
+	this.lastPointerDrop = null;
+	this.pointerFade = 1;
 	this.rimStrength = 1;
 	this.rainDrops = [];
 	this.rainUniformData = new Float32Array(maxRainDrops * 4);
@@ -537,6 +540,14 @@ Ripples.prototype = {
 		bindTexture(this.textures[this.bufferReadIndex]);
 		gl.useProgram(this.updateProgram.id);
 
+		var attenuation = 1;
+		if (this.lastPointerDrop !== null) {
+			var remaining = Math.max(0, 1 - (performance.now() - this.lastPointerDrop) / this.pointerFadeMs);
+			var fade = remaining * remaining * (3 - 2 * remaining);
+			attenuation = this.pointerFade > 0 ? fade / this.pointerFade : 0;
+			this.pointerFade = fade;
+		}
+		gl.uniform1f(this.updateProgram.locations.attenuation, attenuation);
 		this.drawQuad();
 
 		this.swapBufferIndices();
@@ -690,6 +701,7 @@ Ripples.prototype = {
 			'uniform sampler2D texture;',
 			'uniform vec2 delta;',
 			'uniform float damping;',
+			'uniform float attenuation;',
 
 			'varying vec2 coord;',
 
@@ -709,6 +721,7 @@ Ripples.prototype = {
 				'info.g += (average - info.r) * 2.0;',
 				'info.g *= damping;',
 				'info.r += info.g;',
+				'info.rg *= attenuation;',
 
 				'gl_FragColor = info;',
 			'}'
@@ -837,6 +850,11 @@ Ripples.prototype = {
 
 	drop: function(x, y, radius, strength) {
 		gl = this.context;
+		if (this.pointerFadeMs) {
+			if (this.lastPointerDrop !== null && this.pointerFade > 0 && performance.now() - this.lastPointerDrop >= this.pointerFadeMs) this.update();
+			this.lastPointerDrop = performance.now();
+			this.pointerFade = 1;
+		}
 
 		var elWidth = this.$el.innerWidth();
 		var elHeight = this.$el.innerHeight();

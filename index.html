@@ -1177,13 +1177,14 @@ function buttonStaggerAnimation() {
 }
 buttonStaggerAnimation()
 </script>
-  <script src="js/jquery.ripples-angle.js?v=rain-two-seconds"></script>
-  <script src="js/river-ripple-fallback.js?v=rain-two-seconds"></script>
+  <script src="js/jquery.ripples-angle.js?v=pointer-fade-4s"></script>
+  <script src="js/river-ripple-fallback.js?v=pointer-fade-4s"></script>
   <script>
 try {
 $('.hero').ripples({
 	projectionY: Math.SQRT1_2,
 	damping: 0.9965,
+	pointerFadeMs: 4000,
 	resolution: window.matchMedia('(max-width:600px)').matches ? 768 : 1024,
 	dropRadius: 11,
 	perturbance: 0.004,
