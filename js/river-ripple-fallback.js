@@ -37,14 +37,12 @@
       }
       for (const wave of waves) {
         const age = Math.max(0, (now - wave.time) / wave.lifetime);
-        const expansion = wave.rain ? 1 - (1 - age) * (1 - age) : age * wave.lifetime / 1150;
-        const fadeProgress = Math.max(0, (age - .55) / .45);
-        const fade = wave.rain ? (1 - fadeProgress * fadeProgress * (3 - 2 * fadeProgress)) / (1 + age) : (1 - age) ** 2 * (1 + 2 * age);
+        const expansion = age * wave.lifetime / 1150;
+        const fade = (1 - age) ** 2 * (1 + 2 * age);
         const centerX = wave.x * width, centerY = wave.y * height;
-        const radiusScale = wave.rain ? .33 : 1;
-        const outer = (2 + expansion * wave.reach) * radiusScale;
-        const trailing = outer - 18 * radiusScale;
-        const limit = outer + 3 * radiusScale;
+        const outer = 2 + expansion * wave.reach;
+        const trailing = outer - 18;
+        const limit = outer + 3;
         const left = Math.max(0, Math.floor(centerX - limit));
         const right = Math.min(width - 1, Math.ceil(centerX + limit));
         const top = Math.max(0, Math.floor(centerY - limit * projectionY));
@@ -55,7 +53,7 @@
             const dx = x - centerX;
             const distance = Math.sqrt(dx * dx + dy * dy);
             if (distance < Math.max(1, trailing) || distance > limit) continue;
-            const phase = (outer - distance) / (21 * radiusScale);
+            const phase = (outer - distance) / 21;
             const envelope = Math.sin(Math.PI * (phase + 3 / 21));
             const amplitude = envelope * fade * wave.strength;
             const slope = Math.sin(phase * Math.PI * 7) * amplitude * wave.contribution;
@@ -77,10 +75,12 @@
       frame = waves.length ? requestAnimationFrame(render) : 0;
     }
 
-    function drop(x, y, strength, rain = false, contribution = 1) {
+    const mouseContribution = Math.sqrt(.8);
+
+    function drop(x, y, strength, contribution = 1) {
       if (!input || signal.aborted || x < 0 || x > 1 || y < 0 || y > 1) return;
-      const reach = Math.min(surface.width, surface.height) * (.11 + .05 * strength) * (rain ? 1.65 : 1);
-      waves.push({x, y, strength, reach, rain, contribution, lifetime: rain ? 2000 : 4000, time: performance.now()});
+      const reach = Math.min(surface.width, surface.height) * (.11 + .05 * strength);
+      waves.push({x, y, strength, reach, contribution, lifetime: 4000, time: performance.now()});
       if (waves.length > 26) waves.shift();
       if (!frame) frame = requestAnimationFrame(render);
     }
@@ -88,11 +88,10 @@
     function point(event, strength, contribution = 1) {
       if (event.target.closest('.dpnco-river-contact')) return;
       const rect = hero.getBoundingClientRect();
-      drop((event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height, strength, false, contribution);
+      drop((event.clientX - rect.left) / rect.width, (event.clientY - rect.top) / rect.height, strength, contribution);
     }
     hero.addEventListener('pointerdown', function (event) {
-      const mouse = event.pointerType === 'mouse';
-      point(event, mouse ? .86 : 1, mouse ? Math.sqrt(.8) * .34 : 1);
+      if (event.isPrimary && event.button === 0) point(event, .86, mouseContribution);
     }, {passive: true, signal});
     hero.addEventListener('pointermove', function (event) {
       if (event.pointerType !== 'mouse' || performance.now() - lastMove < 55) return;
@@ -103,6 +102,6 @@
       if (frame) cancelAnimationFrame(frame);
       surface.remove();
     }, {once: true});
-    return {dropRain: (x, y) => drop(x, y, .91, true), setReflection};
+    return {dropRain: (x, y) => drop(x, y, .86, Math.sqrt(.8) * .50), setReflection};
   };
 })();

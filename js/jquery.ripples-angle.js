@@ -219,9 +219,6 @@ function isDataUri(url) {
 
 var config = loadConfig();
 var transparentPixels = createImageData(32, 32);
-var rainLifetimeMs = 2000;
-var maxRainDrops = 12; // One drop every 255ms, with up to two seconds visible.
-
 // Extend the css
 $('head').prepend('<style>.jquery-ripples { position: relative; z-index: 0; }</style>');
 
@@ -242,13 +239,12 @@ var Ripples = function (el, options) {
 	this.lastPointerDrop = null;
 	this.pointerFade = 1;
 	this.rimStrength = 1;
-	this.rainDrops = [];
-	this.rainUniformData = new Float32Array(maxRainDrops * 4);
 	this.textureDelta = new Float32Array([1 / this.resolution, 1 / this.resolution]);
 
 	this.perturbance = options.perturbance;
 	this.dropRadius = options.dropRadius;
 	this.mouseImpactStrength = options.mouseImpactStrength;
+	this.matchTouchImpact = options.matchTouchImpact === true;
 
 	this.crossOrigin = options.crossOrigin;
 	this.imageUrl = options.imageUrl;
@@ -382,6 +378,17 @@ Ripples.prototype = {
 			}
 		}
 
+		if (this.matchTouchImpact) {
+			this.$el.on('pointerdown.ripples', function(e) {
+				if (e.originalEvent.isPrimary && e.originalEvent.button === 0 && pointerEventsEnabled()) {
+					that.dropAtPointer(e, that.dropRadius * 1.5, that.mouseImpactStrength);
+				}
+			}).on('pointermove.ripples', function(e) {
+				if (e.originalEvent.pointerType === 'mouse') dropAtPointer(e);
+			});
+			return;
+		}
+
 		// Start listening to pointer events
 		this.$el
 
@@ -504,35 +511,9 @@ Ripples.prototype = {
 		gl.uniform2fv(this.renderProgram.locations.containerRatio, this.renderProgram.uniforms.containerRatio);
 		gl.uniform1i(this.renderProgram.locations.samplerBackground, 0);
 		gl.uniform1i(this.renderProgram.locations.samplerRipples, 1);
-		this.renderRain();
 
 		this.drawQuad();
 		gl.disable(gl.BLEND);
-	},
-
-	renderRain: function() {
-		var now = performance.now();
-		while (this.rainDrops.length && now - this.rainDrops[0].time >= rainLifetimeMs) {
-			this.rainDrops.shift();
-		}
-
-		gl.uniform1i(this.renderProgram.locations.rainCount, this.rainDrops.length);
-		if (!this.rainDrops.length) return;
-
-		var width = this.canvas.width;
-		var height = this.canvas.height;
-		var waveSpeed = 42 * Math.max(width, height / this.projectionY) / this.resolution;
-		for (var i = 0; i < this.rainDrops.length; i++) {
-			var drop = this.rainDrops[i];
-			var age = Math.max(0, (now - drop.time) / 1000);
-			var index = i * 4;
-			this.rainUniformData[index] = drop.x * width;
-			this.rainUniformData[index + 1] = (1 - drop.y) * height;
-			this.rainUniformData[index + 2] = (9 + age * waveSpeed) * 1.1;
-			this.rainUniformData[index + 3] = age;
-		}
-		gl.uniform4fv(this.renderProgram.locations.rainDrops, this.rainUniformData);
-		gl.uniform1f(this.renderProgram.locations.rainProjectionY, this.projectionY);
 	},
 
 	update: function() {
@@ -755,9 +736,6 @@ Ripples.prototype = {
 
 			'uniform float perturbance;',
 			'uniform float rimStrength;',
-			'uniform vec4 rainDrops[' + maxRainDrops + '];',
-			'uniform int rainCount;',
-			'uniform float rainProjectionY;',
 			'varying vec2 ripplesCoord;',
 			'varying vec2 backgroundCoord;',
 
@@ -768,26 +746,6 @@ Ripples.prototype = {
 				'vec3 dx = vec3(delta.x, heightX - height, 0.0);',
 				'vec3 dy = vec3(0.0, heightY - height, delta.y);',
 				'vec2 offset = -normalize(cross(dy, dx)).xz;',
-				'if (rainCount > 0) {',
-					'vec2 rainSlope = vec2(0.0);',
-					'for (int i = 0; i < ' + maxRainDrops + '; i++) {',
-						'if (i >= rainCount) break;',
-						'vec4 rain = rainDrops[i];',
-						'vec2 direction = gl_FragCoord.xy - rain.xy;',
-						'direction.y /= rainProjectionY;',
-						'const float radiusScale = 0.33;',
-						'float extent = (rain.z + 8.0) * radiusScale;',
-						'if (abs(direction.x) > extent || abs(direction.y) > extent) continue;',
-						'float radius = length(direction);',
-						'float phase = (extent - radius) / ((20.0 + 9.0 * rain.w) * radiusScale);',
-						'if (phase <= 0.0 || phase >= 1.0) continue;',
-						'float fade = (1.0 - smoothstep(2.1, 3.0, rain.w)) / (1.0 + 0.75 * rain.w);',
-						'float slope = 1.45 * sin(phase * 12.56637) * sin(phase * 3.14159) * fade;',
-						'rainSlope += direction * (slope / max(1.0, radius));',
-					'}',
-					'vec2 surfaceSlope = vec2(dx.y, dy.y) / delta + rainSlope;',
-					'offset = normalize(vec3(surfaceSlope.x, 1.0, surfaceSlope.y)).xz;',
-				'}',
 				'float specular = pow(max(0.0, dot(offset, normalize(vec2(-0.6, 1.0)))), 4.0);',
 				'gl_FragColor = texture2D(samplerBackground, backgroundCoord + offset * perturbance) + vec4(vec3(specular * rimStrength), 0.0);',
 			'}'
@@ -845,10 +803,9 @@ Ripples.prototype = {
 	/**
 	 *  Public methods
 	 */
-	// Time-limited rain stays separate from the persistent pointer wave field.
+	// Give automatic drops the same impulse as a mouse press.
 	dropRain: function(x, y) {
-		this.rainDrops.push({x: x, y: y, time: performance.now()});
-		if (this.rainDrops.length > maxRainDrops) this.rainDrops.shift();
+		this.drop(x * this.$el.innerWidth(), y * this.$el.innerHeight(), this.dropRadius * 1.5, 0.057);
 	},
 
 	drop: function(x, y, radius, strength) {

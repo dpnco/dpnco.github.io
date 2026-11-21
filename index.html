@@ -205,10 +205,13 @@
    return {x:0.04+((cell%cols+0.15+Math.random()*0.7)/cols)*0.92,
     y:0.04+((Math.floor(cell/cols)+0.15+Math.random()*0.7)/rows)*0.92};
   }
-  function drop(){
+  function drop(first){
    if(disposed||!hero.isConnected||!rainOn)return;
+   // Schedule before drawing so a temporarily unavailable renderer can recover.
+   timer=setTimeout(drop,document.hidden?1000:255);hero.dpncoRainTimer=timer;
    if(!document.hidden){
-    var point=position(),water=window.jQuery&&window.jQuery(hero);
+    var point=first ? {x:.52,y:.61} : position();
+    var water=window.jQuery&&window.jQuery(hero);
     if(water&&water.data('ripples')&&!water.data('ripples').context.isContextLost()){
      water.ripples('play');
      water.ripples('dropRain',point.x,point.y);
@@ -216,7 +219,6 @@
      hero.dpncoRippleFallback.dropRain(point.x,point.y);
     }
    }
-   timer=setTimeout(drop,document.hidden?1000:255);hero.dpncoRainTimer=timer;
   }
   function findControl(e){
    var node=e.target&&e.target.closest?e.target.closest('[data-dpnco-rain-toggle],[data-dpnco-sound-toggle]'):null;
@@ -227,8 +229,9 @@
    e.preventDefault();e.stopPropagation();
    if(node.hasAttribute('data-dpnco-rain-toggle')){
     rainOn=!rainOn;clearTimeout(timer);timer=null;
-    if(rainOn)drop();
-    labels();syncSound();
+    labels();
+    if(rainOn)drop(true);
+    syncSound();
    }else{
     soundOn=!soundOn;
     // Begin audio immediately inside the touch/click gesture, before any visual work.
@@ -236,7 +239,28 @@
     labels(true);
    }
   }
-  hero.addEventListener('click',activate,{capture:true,signal:signal});
+  var rainTouch=null,lastRainTap=-Infinity;
+  hero.addEventListener('touchstart',function(e){
+   var node=findControl(e);
+   rainTouch=node&&node.hasAttribute('data-dpnco-rain-toggle')&&e.touches.length===1 ? e.touches[0] : null;
+  },{capture:true,passive:true,signal:signal});
+  hero.addEventListener('touchcancel',function(){rainTouch=null;},{capture:true,signal:signal});
+  hero.addEventListener('touchend',function(e){
+   var start=rainTouch;
+   rainTouch=null;
+   var end=e.changedTouches[0],node=findControl(e);
+   if(!start||!end||end.identifier!==start.identifier||!node||!node.hasAttribute('data-dpnco-rain-toggle'))return;
+   if(Math.hypot(end.clientX-start.clientX,end.clientY-start.clientY)>=10)return;
+   lastRainTap=performance.now();
+   activate(e);
+  },{capture:true,passive:false,signal:signal});
+  hero.addEventListener('click',function(e){
+   var node=findControl(e);
+   if(node&&node.hasAttribute('data-dpnco-rain-toggle')&&e.detail>0&&performance.now()-lastRainTap<650){
+    e.preventDefault();e.stopPropagation();return;
+   }
+   activate(e);
+  },{capture:true,signal:signal});
   hero.addEventListener('keydown',function(e){
    if((e.key==='Enter'||e.key===' ')&&findControl(e))activate(e);
   },{capture:true,signal:signal});
@@ -284,9 +308,8 @@
  filter:blur(4px);opacity:.78;transition:opacity 240ms ease,transform 240ms ease;
 }
 .hero .dpnco-nature-leaf-img {display:block;position:relative;z-index:1;width:22.5px;height:22.5px;object-fit:contain;pointer-events:none;transition:filter 200ms ease;}
-.hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"] {opacity:.88!important;filter:none!important;}
 .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"] .dpnco-nature-leaf-img {filter:none!important;}
-.hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"]::before {opacity:.72;}
+.hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="false"]::before {opacity:0;}
 .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"] {opacity:1!important;filter:drop-shadow(0 0 3px rgba(255,255,255,.75)) drop-shadow(0 0 7px rgba(241,247,255,.32))!important;}
 .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"] .dpnco-nature-leaf-img {filter:none!important;}
 .hero .dpnco-rain-toggle.dpnco-sound-toggle[aria-pressed="true"]::before {opacity:1;}
@@ -1177,15 +1200,16 @@ function buttonStaggerAnimation() {
 }
 buttonStaggerAnimation()
 </script>
-  <script src="js/jquery.ripples-angle.js?v=rain-radius-33-2s"></script>
-  <script src="js/river-ripple-fallback.js?v=mouse-impact-34"></script>
+  <script src="js/jquery.ripples-angle.js?v=rain-2-2-auto"></script>
+  <script src="js/river-ripple-fallback.js?v=rain-2-pointer"></script>
   <script>
 try {
 $('.hero').ripples({
 	projectionY: Math.SQRT1_2,
 	damping: 0.9965,
 	pointerFadeMs: 4000,
-	mouseImpactStrength: 0.03876,
+	mouseImpactStrength: 0.114,
+	matchTouchImpact: true,
 	resolution: window.matchMedia('(max-width:600px)').matches ? 768 : 1024,
 	dropRadius: 11,
 	perturbance: 0.004,
