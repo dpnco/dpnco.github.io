@@ -225,6 +225,7 @@ $('head').prepend('<style>.jquery-ripples { position: relative; z-index: 0; }</s
 // RIPPLES CLASS DEFINITION
 // =========================
 
+var rainPairs = 4;
 var Ripples = function (el, options) {
 	var that = this;
 
@@ -234,11 +235,21 @@ var Ripples = function (el, options) {
 	this.interactive = options.interactive;
 	this.resolution = options.resolution;
 	this.projectionY = options.projectionY || 1;
-	this.damping = options.damping;
+	this.waveStepMs = options.waveUpdatesPerSecond ? 1000 / options.waveUpdatesPerSecond : 0;
+	this.waveTime = null;
+	this.waveRemainder = 0;
+	// Keep damping per second consistent when the wave solver advances more often.
+	this.damping = this.waveStepMs ? Math.pow(options.damping, this.waveStepMs * 60 / 1000) : options.damping;
 	this.pointerFadeMs = options.pointerFadeMs || 0;
 	this.lastPointerDrop = null;
+	this.rainFadeMs = options.rainFadeMs || 0;
+	this.rainLayers = [];
 	this.pointerFade = 1;
 	this.rimStrength = 1;
+	this.rimTint = [1, 1, 1];
+	this.lightX = -600;
+	this.lightY = 1000;
+	this.refractionScale = 1;
 	this.textureDelta = new Float32Array([1 / this.resolution, 1 / this.resolution]);
 
 	this.perturbance = options.perturbance;
@@ -282,27 +293,7 @@ var Ripples = function (el, options) {
 	this.bufferWriteIndex = 0;
 	this.bufferReadIndex = 1;
 
-	var arrayType = config.arrayType;
-	var textureData = arrayType ? new arrayType(this.resolution * this.resolution * 4) : null;
-
-	for (var i = 0; i < 2; i++) {
-		var texture = gl.createTexture();
-		var framebuffer = gl.createFramebuffer();
-
-		gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
-
-		gl.bindTexture(gl.TEXTURE_2D, texture);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, config.linearSupport ? gl.LINEAR : gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, config.linearSupport ? gl.LINEAR : gl.NEAREST);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.resolution, this.resolution, 0, gl.RGBA, config.type, textureData);
-
-		gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
-
-		this.textures.push(texture);
-		this.framebuffers.push(framebuffer);
-	}
+	this.allocateWaveBuffers(this);
 
 	// Init GL stuff
 	this.quad = gl.createBuffer();
@@ -334,9 +325,9 @@ var Ripples = function (el, options) {
 	this.setupPointerEvents();
 
 	// Init animation
-	function step() {
+	function step(time) {
 		if (!that.destroyed) {
-			that.step();
+			that.step(time);
 
 			requestAnimationFrame(step);
 		}
@@ -357,6 +348,59 @@ Ripples.DEFAULTS = {
 };
 
 Ripples.prototype = {
+
+	allocateWaveBuffers: function(layer) {
+		var arrayType = config.arrayType;
+		var textureData = arrayType ? new arrayType(this.resolution * this.resolution * 4) : null;
+
+		for (var i = 0; i < 2; i++) {
+			var texture = gl.createTexture();
+			var framebuffer = gl.createFramebuffer();
+
+			gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+
+			gl.bindTexture(gl.TEXTURE_2D, texture);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, config.linearSupport ? gl.LINEAR : gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, config.linearSupport ? gl.LINEAR : gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.resolution, this.resolution, 0, gl.RGBA, config.type, textureData);
+
+			gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+
+			layer.textures.push(texture);
+			layer.framebuffers.push(framebuffer);
+		}
+
+	},
+
+	updateRain: function(now) {
+		gl.viewport(0, 0, this.resolution, this.resolution);
+		gl.useProgram(this.updateProgram.id);
+		for (var i = 0; i < this.rainLayers.length; i++) {
+			var layer = this.rainLayers[i];
+			for (var channel = 0; channel < 2; channel++) {
+				var start = layer.start[channel];
+				if (start !== null && now - start >= this.rainFadeMs) layer.start[channel] = null;
+			}
+			if (layer.start[0] === null && layer.start[1] === null) continue;
+			gl.bindFramebuffer(gl.FRAMEBUFFER, layer.framebuffers[layer.bufferWriteIndex]);
+			bindTexture(layer.textures[layer.bufferReadIndex]);
+			gl.uniform2f(this.updateProgram.locations.attenuation,
+				layer.start[0] === null ? 0 : 1, layer.start[1] === null ? 0 : 1);
+			this.drawQuad();
+			this.swapBufferIndices.call(layer);
+		}
+	},
+
+	resetRainChannel: function(layer, channel) {
+		gl.colorMask(channel === 0, channel === 0, channel === 1, channel === 1);
+		for (var i = 0; i < 2; i++) {
+			gl.bindFramebuffer(gl.FRAMEBUFFER, layer.framebuffers[i]);
+			gl.clear(gl.COLOR_BUFFER_BIT);
+		}
+		gl.colorMask(true, true, true, true);
+	},
 
 	// Set up pointer (mouse + touch) events
 	setupPointerEvents: function() {
@@ -469,7 +513,7 @@ Ripples.prototype = {
 		image.src = this.imageSource;
 	},
 
-	step: function() {
+	step: function(time) {
 		gl = this.context;
 
 		if (!this.visible) {
@@ -478,8 +522,19 @@ Ripples.prototype = {
 
 		this.computeTextureBoundaries();
 
+		var steps = 1;
+		if (this.waveStepMs) {
+			var elapsed = this.waveTime === null ? this.waveStepMs : Math.max(0, time - this.waveTime);
+			this.waveTime = time;
+			this.waveRemainder = this.running ? this.waveRemainder + Math.min(elapsed, this.waveStepMs * 3) : 0;
+			steps = Math.floor(this.waveRemainder / this.waveStepMs);
+			this.waveRemainder -= steps * this.waveStepMs;
+		}
 		if (this.running) {
-			this.update();
+			for (var i = 0; i < steps; i++) {
+				this.update();
+				if (this.rainLayers.length) this.updateRain(performance.now());
+			}
 		}
 
 		this.render();
@@ -502,18 +557,44 @@ Ripples.prototype = {
 		gl.useProgram(this.renderProgram.id);
 
 		bindTexture(this.backgroundTexture, 0);
-		bindTexture(this.textures[0], 1);
+		bindTexture(this.textures[this.waveStepMs ? this.bufferReadIndex : 0], 1);
 
-		gl.uniform1f(this.renderProgram.locations.perturbance, this.perturbance);
+		gl.uniform1f(this.renderProgram.locations.perturbance, this.perturbance * this.refractionScale);
+		gl.uniform2f(this.renderProgram.locations.lightPosition, this.lightX, this.lightY);
 		gl.uniform1f(this.renderProgram.locations.rimStrength, this.rimStrength);
+		gl.uniform3fv(this.renderProgram.locations.rimTint, this.rimTint);
 		gl.uniform2fv(this.renderProgram.locations.topLeft, this.renderProgram.uniforms.topLeft);
 		gl.uniform2fv(this.renderProgram.locations.bottomRight, this.renderProgram.uniforms.bottomRight);
 		gl.uniform2fv(this.renderProgram.locations.containerRatio, this.renderProgram.uniforms.containerRatio);
 		gl.uniform1i(this.renderProgram.locations.samplerBackground, 0);
 		gl.uniform1i(this.renderProgram.locations.samplerRipples, 1);
+		if (this.rainFadeMs) {
+			var now = performance.now();
+			for (var i = 0; i < rainPairs; i++) {
+				var layer = this.rainLayers[i];
+				var first = layer ? this.rainFade(layer.start[0], now) : 0;
+				var second = layer ? this.rainFade(layer.start[1], now) : 0;
+				bindTexture(layer ? layer.textures[this.waveStepMs ? layer.bufferReadIndex : 0] : this.textures[0], 2 + i);
+				gl.uniform1i(this.renderProgram.locations['rainLayer' + i], 2 + i);
+				gl.uniform2f(this.renderProgram.locations['rainWeight' + i], first, second);
+			}
+		}
+
+		if (this.logoTexture) {
+			bindTexture(this.logoTexture, 6);
+			gl.uniform1i(this.renderProgram.locations.samplerLogo, 6);
+		}
 
 		this.drawQuad();
 		gl.disable(gl.BLEND);
+	},
+
+	rainFade: function(start, now) {
+		if (start === null) return 0;
+		// Keep the original wave visible before easing it out at the two-second mark.
+		var age = (now - start) / this.rainFadeMs;
+		var remaining = Math.max(0, Math.min(1, (1 - age) / 0.30));
+		return remaining * remaining * (3 - 2 * remaining);
 	},
 
 	update: function() {
@@ -530,7 +611,7 @@ Ripples.prototype = {
 			attenuation = this.pointerFade > 0 ? fade / this.pointerFade : 0;
 			this.pointerFade = fade;
 		}
-		gl.uniform1f(this.updateProgram.locations.attenuation, attenuation);
+		gl.uniform2f(this.updateProgram.locations.attenuation, attenuation, 0);
 		this.drawQuad();
 
 		this.swapBufferIndices();
@@ -663,6 +744,7 @@ Ripples.prototype = {
 			'uniform vec2 center;',
 			'uniform float radius;',
 			'uniform float strength;',
+			'uniform vec2 impactChannel;',
 
 			'varying vec2 coord;',
 
@@ -672,7 +754,7 @@ Ripples.prototype = {
 				'float drop = max(0.0, 1.0 - length(center * 0.5 + 0.5 - coord) / radius);',
 				'drop = 0.5 - cos(drop * PI) * 0.5;',
 
-				'info.r += drop * strength;',
+				'info.rb += drop * strength * impactChannel;',
 
 				'gl_FragColor = info;',
 			'}'
@@ -684,7 +766,7 @@ Ripples.prototype = {
 			'uniform sampler2D texture;',
 			'uniform vec2 delta;',
 			'uniform float damping;',
-			'uniform float attenuation;',
+			'uniform vec2 attenuation;',
 
 			'varying vec2 coord;',
 
@@ -694,17 +776,18 @@ Ripples.prototype = {
 				'vec2 dx = vec2(delta.x, 0.0);',
 				'vec2 dy = vec2(0.0, delta.y);',
 
-				'float average = (',
-					'texture2D(texture, coord - dx).r +',
-					'texture2D(texture, coord - dy).r +',
-					'texture2D(texture, coord + dx).r +',
-					'texture2D(texture, coord + dy).r',
+				'vec2 average = (',
+					'texture2D(texture, coord - dx).rb +',
+					'texture2D(texture, coord - dy).rb +',
+					'texture2D(texture, coord + dx).rb +',
+					'texture2D(texture, coord + dy).rb',
 				') * 0.25;',
 
-				'info.g += (average - info.r) * 2.0;',
-				'info.g *= damping;',
-				'info.r += info.g;',
-				'info.rg *= attenuation;',
+				'info.ga += (average - info.rb) * 2.0;',
+				'info.ga *= damping;',
+				'info.rb += info.ga;',
+				'info.rg *= attenuation.x;',
+				'info.ba *= attenuation.y;',
 
 				'gl_FragColor = info;',
 			'}'
@@ -712,6 +795,20 @@ Ripples.prototype = {
 		gl.uniform2fv(this.updateProgram.locations.delta, this.textureDelta);
 		gl.uniform1f(this.updateProgram.locations.damping, this.damping);
 
+		this.initRenderProgram(false);
+	},
+
+	initRenderProgram: function(withLogo) {
+		gl = this.context;
+		var previous = this.renderProgram;
+		// Add each original wave's height before applying the original normal and lighting.
+		var rainUniforms = [], rainHeights = [];
+		for (var i = 0; this.rainFadeMs && i < rainPairs; i++) {
+			rainUniforms.push('uniform sampler2D rainLayer' + i + ';',
+				'uniform vec2 rainWeight' + i + ';');
+			rainHeights.push('if (rainWeight' + i + '.x + rainWeight' + i + '.y > 0.0) {',
+				'height += dot(texture2D(rainLayer' + i + ', position).rb, rainWeight' + i + ');', '}');
+		}
 		this.renderProgram = createProgram([
 			'precision highp float;',
 
@@ -721,10 +818,12 @@ Ripples.prototype = {
 			'uniform vec2 containerRatio;',
 			'varying vec2 ripplesCoord;',
 			'varying vec2 backgroundCoord;',
+			'varying vec2 screenPosition;',
 			'void main() {',
 				'backgroundCoord = mix(topLeft, bottomRight, vertex * 0.5 + 0.5);',
 				'backgroundCoord.y = 1.0 - backgroundCoord.y;',
-				'ripplesCoord = vec2(vertex.x, -vertex.y) * containerRatio * 0.5 + 0.5;',
+				'screenPosition = vec2(vertex.x, -vertex.y);',
+				'ripplesCoord = screenPosition * containerRatio * 0.5 + 0.5;',
 				'gl_Position = vec4(vertex.x, -vertex.y, 0.0, 1.0);',
 			'}'
 		].join('\n'), [
@@ -736,21 +835,40 @@ Ripples.prototype = {
 
 			'uniform float perturbance;',
 			'uniform float rimStrength;',
+			'uniform vec3 rimTint;',
+			'uniform vec2 lightPosition;',
+			withLogo ? 'uniform sampler2D samplerLogo; uniform vec2 logoPixel;' : '',
 			'varying vec2 ripplesCoord;',
 			'varying vec2 backgroundCoord;',
-
+			'varying vec2 screenPosition;',
+			rainUniforms.join('\n'),
+			'vec2 rippleHeights(vec2 position) {',
+				'float height = 0.0;',
+				rainHeights.join('\n'),
+				'return vec2(texture2D(samplerRipples, position).r, height);',
+			'}',
+			'vec2 rippleOffset(vec2 slope) {',
+				'return normalize(vec3(slope.x, -1.0, slope.y)).xz;',
+			'}',
 			'void main() {',
-				'float height = texture2D(samplerRipples, ripplesCoord).r;',
-				'float heightX = texture2D(samplerRipples, vec2(ripplesCoord.x + delta.x, ripplesCoord.y)).r;',
-				'float heightY = texture2D(samplerRipples, vec2(ripplesCoord.x, ripplesCoord.y + delta.y)).r;',
-				'vec3 dx = vec3(delta.x, heightX - height, 0.0);',
-				'vec3 dy = vec3(0.0, heightY - height, delta.y);',
-				'vec2 offset = -normalize(cross(dy, dx)).xz;',
-				'float specular = pow(max(0.0, dot(offset, normalize(vec2(-0.6, 1.0)))), 4.0);',
-				'gl_FragColor = texture2D(samplerBackground, backgroundCoord + offset * perturbance) + vec4(vec3(specular * rimStrength), 0.0);',
+				'vec2 height = rippleHeights(ripplesCoord);',
+				'vec2 slopeX = (rippleHeights(ripplesCoord + vec2(delta.x, 0.0)) - height) / delta.x;',
+				'vec2 slopeY = (rippleHeights(ripplesCoord + vec2(0.0, delta.y)) - height) / delta.y;',
+				'vec2 offset = rippleOffset(vec2(slopeX.x + slopeX.y, slopeY.x + slopeY.y));',
+				'vec2 toLight = lightPosition - screenPosition;',
+				'vec2 light = toLight / max(length(toLight), 0.20);',
+				'float facing = max(0.0, dot(offset, light));',
+				'float specular = pow(facing, 4.0);',
+				'vec4 water = texture2D(samplerBackground, backgroundCoord + offset * perturbance) + vec4(rimTint * (specular * rimStrength), 0.0);',
+				withLogo ? 'vec4 letters = texture2D(samplerLogo, screenPosition * 0.5 + 0.5 + offset * logoPixel);' : '',
+				withLogo ? 'gl_FragColor = vec4(mix(water.rgb, letters.rgb, letters.a), water.a);' : 'gl_FragColor = water;',
 			'}'
 		].join('\n'));
 		gl.uniform2fv(this.renderProgram.locations.delta, this.textureDelta);
+		if (previous) {
+			this.renderProgram.uniforms = previous.uniforms;
+			gl.deleteProgram(previous.id);
+		}
 	},
 
 	initTexture: function() {
@@ -805,7 +923,31 @@ Ripples.prototype = {
 	 */
 	// Give automatic drops the same impulse as a mouse press.
 	dropRain: function(x, y) {
-		this.drop(x * this.$el.innerWidth(), y * this.$el.innerHeight(), this.dropRadius * 1.5, 0.057);
+		var width = this.$el.innerWidth(), height = this.$el.innerHeight();
+		if (!this.rainFadeMs) {
+			this.drop(x * width, y * height, this.dropRadius * 1.5, 0.07638);
+			return;
+		}
+
+		gl = this.context;
+		var now = performance.now();
+		// Two independent drops fit in each texture pair via RG and BA.
+		for (var i = 0; i < rainPairs; i++) {
+			var layer = this.rainLayers[i];
+			if (!layer) {
+				layer = {textures: [], framebuffers: [], bufferWriteIndex: 0, bufferReadIndex: 1, start: [null, null]};
+				this.allocateWaveBuffers(layer);
+				this.rainLayers.push(layer);
+			}
+			for (var channel = 0; channel < 2; channel++) {
+				var started = layer.start[channel];
+				if (started !== null && now - started < this.rainFadeMs) continue;
+				this.resetRainChannel(layer, channel);
+				layer.start[channel] = now;
+				this.applyImpact(layer, x * width, y * height, this.dropRadius * 1.5, 0.07638, channel);
+				return;
+			}
+		}
 	},
 
 	drop: function(x, y, radius, strength) {
@@ -815,7 +957,10 @@ Ripples.prototype = {
 			this.lastPointerDrop = performance.now();
 			this.pointerFade = 1;
 		}
+		this.applyImpact(this, x, y, radius, strength, 0);
+	},
 
+	applyImpact: function(layer, x, y, radius, strength, channel) {
 		var elWidth = this.$el.innerWidth();
 		var elHeight = this.$el.innerHeight();
 		var longestSide = Math.max(elWidth, elHeight / this.projectionY);
@@ -829,17 +974,18 @@ Ripples.prototype = {
 
 		gl.viewport(0, 0, this.resolution, this.resolution);
 
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffers[this.bufferWriteIndex]);
-		bindTexture(this.textures[this.bufferReadIndex]);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, layer.framebuffers[layer.bufferWriteIndex]);
+		bindTexture(layer.textures[layer.bufferReadIndex]);
 
 		gl.useProgram(this.dropProgram.id);
 		gl.uniform2fv(this.dropProgram.locations.center, dropPosition);
 		gl.uniform1f(this.dropProgram.locations.radius, radius);
 		gl.uniform1f(this.dropProgram.locations.strength, strength);
+		gl.uniform2f(this.dropProgram.locations.impactChannel, channel === 0 ? 1 : 0, channel === 1 ? 1 : 0);
 
 		this.drawQuad();
 
-		this.swapBufferIndices();
+		this.swapBufferIndices.call(layer);
 	},
 
 	updateSize: function() {

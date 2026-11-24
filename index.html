@@ -931,12 +931,12 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var portrait=window.matchMedia('(orientation: portrait)');
  var wasPortrait=portrait.matches;
  var layers=[
-  {src:originalUrl,start:0,end:1},
-  {src:'images/river-study/rain-gray.webp',start:.05,end:.18},
-  {src:'images/dpnco-lineless-warm-water.jpg',start:.16,end:.32},
-  {src:'images/dpnco-lineless-cool-water.jpg',start:.30,end:.54},
-  {src:'images/river-study/silver-reflection.webp',start:.52,end:.78},
-  {src:'images/river-study/submerged-shore.webp',start:.76,end:.98}
+  {src:originalUrl,start:0,end:1,rimTint:[.94,1,.94]},
+  {src:'images/river-study/rain-gray.webp',start:.05,end:.18,rimTint:[1,.92,.84]},
+  {src:'images/dpnco-lineless-warm-water.jpg',start:.16,end:.32,rimTint:[1,.98,.94]},
+  {src:'images/dpnco-lineless-cool-water.jpg',start:.30,end:.54,rimTint:[.96,.98,1]},
+  {src:'images/river-study/silver-reflection.webp',start:.52,end:.78,rimTint:[.95,.97,1]},
+  {src:'images/river-study/submerged-shore.webp',start:.76,end:.98,rimTint:[.82,.94,1]}
  ];
  layers.forEach(function(layer){
   layer.image=new Image();
@@ -1035,23 +1035,38 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   }
   ctx.globalAlpha=1;
   cover(layers[baseLayer].image);
+  var rimTint=layers[baseLayer].rimTint.slice();
   for(var i=baseLayer+1;i<layers.length;i++){
    var layer=layers[i];
    if(p<=layer.start||!layer.image.naturalWidth)continue;
-   ctx.globalAlpha=smooth((p-layer.start)/(layer.end-layer.start));
+   var blend=smooth((p-layer.start)/(layer.end-layer.start));
+   ctx.globalAlpha=blend;
+   // Transition highlight color with the same blend as the underlying water.
+   for(var channel=0;channel<3;channel++){
+    rimTint[channel]+=(layer.rimTint[channel]-rimTint[channel])*blend;
+   }
    cover(layer.image);
   }
   ctx.globalAlpha=1;
   var water=getWater(),gl=water&&water.context;
-  // Ease both rain and pointer highlights from a whiter rim to a soft, visible minimum.
-  var rimStrength=.62-.32*smooth(p);
-  if(water)water.rimStrength=rimStrength;
+  // Follow the reflected light from the upper right into clear water at center.
+  var lightTravel=smooth(p),lightX=.82*(1-lightTravel),lightY=.90*(1-lightTravel);
+  var finalScene=layers[layers.length-1];
+  var finalBlend=smooth((p-finalScene.start)/(finalScene.end-finalScene.start));
+  var rimStrength=.62-.46*lightTravel+.08*finalBlend;
+  var refractionScale=1-.20*lightTravel;
+  if(water){
+   water.rimStrength=rimStrength;
+   water.rimTint=rimTint;
+   water.lightX=lightX;water.lightY=lightY;
+   water.refractionScale=refractionScale;
+  }
   if(!gl||!water.backgroundTexture||gl.isContextLost()){
    texture.hidden=false;
    if(!hero.dpncoRippleFallback&&window.createRiverRippleFallback){
     hero.dpncoRippleFallback=window.createRiverRippleFallback(hero,texture,signal);
    }
-   if(hero.dpncoRippleFallback)hero.dpncoRippleFallback.setReflection(rimStrength);
+   if(hero.dpncoRippleFallback)hero.dpncoRippleFallback.setReflection(rimStrength,lightX,lightY,refractionScale,rimTint);
    return;
   }
   var active=gl.getParameter(gl.ACTIVE_TEXTURE),binding,flip;
@@ -1216,14 +1231,16 @@ function buttonStaggerAnimation() {
 }
 buttonStaggerAnimation()
 </script>
-  <script src="js/jquery.ripples-angle.js?v=rain-2-2-auto"></script>
-  <script src="js/river-ripple-fallback.js?v=rain-2-pointer"></script>
+  <script src="js/jquery.ripples-angle.js?v=original-rain21-sky-reflection"></script>
+  <script src="js/river-ripple-fallback.js?v=original-rain21-sky-reflection"></script>
   <script>
 try {
 $('.hero').ripples({
 	projectionY: Math.SQRT1_2,
 	damping: 0.9965,
 	pointerFadeMs: 4000,
+	rainFadeMs: 2000,
+	waveUpdatesPerSecond: 75,
 	mouseImpactStrength: 0.114,
 	matchTouchImpact: true,
 	resolution: window.matchMedia('(max-width:600px)').matches ? 768 : 1024,
@@ -1313,7 +1330,7 @@ $('.grid_card.card_4').ripples({
         letterRect.width*xScale,letterRect.height*yScale);
       var previousUnit=gl.getParameter(gl.ACTIVE_TEXTURE);
       var previousFlip=gl.getParameter(gl.UNPACK_FLIP_Y_WEBGL);
-      gl.activeTexture(gl.TEXTURE2);
+      gl.activeTexture(gl.TEXTURE0+6);
       gl.bindTexture(gl.TEXTURE_2D,logoTexture);
       gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,logoSurface);
@@ -1337,77 +1354,13 @@ $('.grid_card.card_4').ripples({
       return;
     }
     gl=water.context;
-    var vertex=[
-      'precision highp float;',
-      'attribute vec2 vertex;',
-      'uniform vec2 topLeft;',
-      'uniform vec2 bottomRight;',
-      'uniform vec2 containerRatio;',
-      'varying vec2 ripplesCoord;',
-      'varying vec2 backgroundCoord;',
-      'varying vec2 logoCoord;',
-      'void main(){',
-      'backgroundCoord=mix(topLeft,bottomRight,vertex*0.5+0.5);',
-      'backgroundCoord.y=1.0-backgroundCoord.y;',
-      'ripplesCoord=vec2(vertex.x,-vertex.y)*containerRatio*0.5+0.5;',
-      'logoCoord=vec2(vertex.x,-vertex.y)*0.5+0.5;',
-      'gl_Position=vec4(vertex.x,-vertex.y,0.0,1.0);',
-      '}'
-    ].join('\n');
-    var fragment=[
-      'precision highp float;',
-      'uniform sampler2D samplerBackground;',
-      'uniform sampler2D samplerRipples;',
-      'uniform sampler2D samplerLogo;',
-      'uniform vec2 delta;',
-      'uniform vec2 logoPixel;',
-      'uniform float perturbance;',
-      'varying vec2 ripplesCoord;',
-      'varying vec2 backgroundCoord;',
-      'varying vec2 logoCoord;',
-      'void main(){',
-      'float height=texture2D(samplerRipples,ripplesCoord).r;',
-      'float heightX=texture2D(samplerRipples,vec2(ripplesCoord.x+delta.x,ripplesCoord.y)).r;',
-      'float heightY=texture2D(samplerRipples,vec2(ripplesCoord.x,ripplesCoord.y+delta.y)).r;',
-      'vec3 dx=vec3(delta.x,heightX-height,0.0);',
-      'vec3 dy=vec3(0.0,heightY-height,delta.y);',
-      'vec2 offset=-normalize(cross(dy,dx)).xz;',
-      'float specular=pow(max(0.0,dot(offset,normalize(vec2(-0.6,1.0)))),4.0);',
-      // Exactly the 01A white-edged water color.
-      'vec4 base=texture2D(samplerBackground,backgroundCoord+offset*perturbance);',
-      'vec3 waterColor=base.rgb+vec3(specular*1.75);',
-      // Logo UV moves only when the real underlying wave normal changes.
-      'vec4 letters=texture2D(samplerLogo,logoCoord+offset*logoPixel);',
-      'gl_FragColor=vec4(mix(waterColor,letters.rgb,letters.a),base.a);',
-      '}'
-    ].join('\n');
-    function compile(type,src){
-      var sh=gl.createShader(type);
-      gl.shaderSource(sh,src);gl.compileShader(sh);
-      if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS)){
-        var error=gl.getShaderInfoLog(sh);gl.deleteShader(sh);
-        throw new Error(error||'Unable to compile water shader');
-      }
-      return sh;
-    }
     try{
-      var vs=compile(gl.VERTEX_SHADER,vertex);
-      var fs=compile(gl.FRAGMENT_SHADER,fragment);
-      program=gl.createProgram();
-      gl.attachShader(program,vs);gl.attachShader(program,fs);
-      gl.bindAttribLocation(program,0,'vertex');
-      gl.linkProgram(program);
-      gl.deleteShader(vs);gl.deleteShader(fs);
-      if(!gl.getProgramParameter(program,gl.LINK_STATUS))
-        throw new Error(gl.getProgramInfoLog(program)||'Unable to link shader');
-      locations={};
-      ['topLeft','bottomRight','containerRatio','samplerBackground','samplerRipples','samplerLogo','delta','perturbance','logoPixel'].forEach(function(name){
-        locations[name]=gl.getUniformLocation(program,name);
-        if(locations[name]===null)throw new Error('Missing shader uniform: '+name);
-      });
+      water.initRenderProgram(true);
+      program=water.renderProgram.id;
+      locations=water.renderProgram.locations;
       logoTexture=gl.createTexture();
       var previousUnit=gl.getParameter(gl.ACTIVE_TEXTURE);
-      gl.activeTexture(gl.TEXTURE2);
+      gl.activeTexture(gl.TEXTURE0+6);
       gl.bindTexture(gl.TEXTURE_2D,logoTexture);
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
@@ -1415,11 +1368,7 @@ $('.grid_card.card_4').ripples({
       gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
       gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,0]));
       gl.activeTexture(previousUnit);
-      gl.useProgram(program);
-      gl.uniform2fv(locations.delta,water.textureDelta);
-      gl.uniform1i(locations.samplerLogo,2);
-      // Preserve 01A's original ripple simulation and original render uniforms.
-      water.renderProgram={id:program,locations:locations,uniforms:water.renderProgram.uniforms};
+      water.logoTexture=logoTexture;
       if(!updateLogo())logo.addEventListener('load',updateLogo,{once:true});
       window.addEventListener('resize',function(){
         cancelAnimationFrame(resizeFrame);

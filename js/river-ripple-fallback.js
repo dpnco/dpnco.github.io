@@ -13,9 +13,15 @@
     const projectionY = Math.SQRT1_2;
     const waves = [];
     let input, output, frame = 0, lastMove = -Infinity, rim = 1;
+    let lightX = .82, lightY = .90, refractionScale = 1;
+    let rimTint = [1, 1, 1];
 
-    function setReflection(strength) {
+    function setReflection(strength, x, y, clarity, tint) {
+      rimTint = tint;
       rim = strength;
+      lightX = x;
+      lightY = y;
+      refractionScale = clarity;
       const scale = Math.min(1, 640 / Math.max(texture.width, texture.height));
       const width = Math.max(1, Math.round(texture.width * scale));
       const height = Math.max(1, Math.round(texture.height * scale));
@@ -37,8 +43,9 @@
       }
       for (const wave of waves) {
         const age = Math.max(0, (now - wave.time) / wave.lifetime);
-        const expansion = age * wave.lifetime / 1150;
-        const fade = (1 - age) ** 2 * (1 + 2 * age);
+        const expansion = age * wave.lifetime * 1.25 / 1150;
+        const fadeAge = Math.max(0, (age - wave.fadeStart) / (1 - wave.fadeStart));
+        const fade = (1 - fadeAge) ** 2 * (1 + 2 * fadeAge);
         const centerX = wave.x * width, centerY = wave.y * height;
         const outer = 2 + expansion * wave.reach;
         const trailing = outer - 18;
@@ -58,15 +65,19 @@
             const amplitude = envelope * fade * wave.strength;
             const slope = Math.sin(phase * Math.PI * 7) * amplitude * wave.contribution;
             const normalX = dx / distance, normalY = dy / distance;
-            const sx = Math.max(0, Math.min(width - 1, Math.round(x + normalX * slope * 3)));
-            const sy = Math.max(0, Math.min(height - 1, Math.round(y + normalY * slope * 3 * projectionY)));
+            const refraction = 3 * refractionScale;
+            const sx = Math.max(0, Math.min(width - 1, Math.round(x + normalX * slope * refraction)));
+            const sy = Math.max(0, Math.min(height - 1, Math.round(y + normalY * slope * projectionY * refraction)));
             const target = (y * width + x) * 4, source = (sy * width + sx) * 4;
-            const light = (-normalX * .36 + normalY * .92) * slope * (8 + 55 * rim);
+            const toLightX = lightX - (2 * x / width - 1);
+            const toLightY = lightY - (1 - 2 * y / height);
+            const facing = (normalX * toLightX - normalY * toLightY) / Math.max(.20, Math.hypot(toLightX, toLightY));
+            const light = facing * slope * (8 + 55 * rim);
             const alpha = Math.min(215, Math.abs(slope) * (110 + 95 * rim));
             if (alpha < pixels[target + 3]) continue;
-            pixels[target] = input[source] + light;
-            pixels[target + 1] = input[source + 1] + light;
-            pixels[target + 2] = input[source + 2] + light;
+            pixels[target] = input[source] + light * (light > 0 ? rimTint[0] : 1);
+            pixels[target + 1] = input[source + 1] + light * (light > 0 ? rimTint[1] : 1);
+            pixels[target + 2] = input[source + 2] + light * (light > 0 ? rimTint[2] : 1);
             pixels[target + 3] = alpha;
           }
         }
@@ -77,10 +88,10 @@
 
     const mouseContribution = Math.sqrt(.8);
 
-    function drop(x, y, strength, contribution = 1) {
+    function drop(x, y, strength, contribution = 1, lifetime = 4000, fadeStart = 0) {
       if (!input || signal.aborted || x < 0 || x > 1 || y < 0 || y > 1) return;
       const reach = Math.min(surface.width, surface.height) * (.11 + .05 * strength);
-      waves.push({x, y, strength, reach, contribution, lifetime: 4000, time: performance.now()});
+      waves.push({x, y, strength, reach, contribution, lifetime, fadeStart, time: performance.now()});
       if (waves.length > 26) waves.shift();
       if (!frame) frame = requestAnimationFrame(render);
     }
@@ -102,6 +113,6 @@
       if (frame) cancelAnimationFrame(frame);
       surface.remove();
     }, {once: true});
-    return {dropRain: (x, y) => drop(x, y, .86, Math.sqrt(.8) * .50), setReflection};
+    return {dropRain: (x, y) => drop(x, y, .86, mouseContribution * .67, 2000, .70), setReflection};
   };
 })();
