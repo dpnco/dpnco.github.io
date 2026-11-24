@@ -930,7 +930,6 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  var reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
  var portrait=window.matchMedia('(orientation: portrait)');
  var wasPortrait=portrait.matches;
- var finalCloudLayers=[];
  var layers=[
   {src:originalUrl,start:0,end:1},
   {src:'images/river-study/rain-gray.webp',start:.05,end:.18},
@@ -942,13 +941,6 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
  layers.forEach(function(layer){
   layer.image=new Image();
   layer.image.onload=function(){
-   if(layer===layers[4]){
-    finalCloudLayers=prepareFinalCloudLayers(layer.image);
-    finalCloudLayers.push(
-     prepareLowerCloud(layer.image,.035,.50,.35,.43),
-     prepareLowerCloud(layer.image,.29,.31,.29,.31)
-    );
-   }
    lastPaintProgress=-1;update();
   };
   layer.image.src=layer.src;
@@ -961,89 +953,13 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   cloudCorner.width=w;cloudCorner.height=h;
   var corner=cloudCorner.getContext('2d');
   corner.drawImage(reflectionPhoto,0,0);
-  // Fill the upper-right mountain reflection with neighboring open water.
-  var openWater=document.createElement('canvas');
-  openWater.width=w;openWater.height=h;
-  var brush=openWater.getContext('2d');
-  brush.drawImage(reflectionPhoto,w*.51,0,w*.27,h*.40,w*.73,0,w*.27,h*.40);
-  brush.globalCompositeOperation='destination-in';
-  var edge=brush.createLinearGradient(w*.73,0,w*.9,0);
-  edge.addColorStop(0,'transparent');edge.addColorStop(1,'black');
-  brush.fillStyle=edge;brush.fillRect(0,0,w,h);
-  var depth=brush.createLinearGradient(0,h*.25,0,h*.40);
-  depth.addColorStop(0,'black');depth.addColorStop(1,'transparent');
-  brush.fillStyle=depth;brush.fillRect(0,0,w,h);
-  corner.drawImage(openWater,0,0);
-  var photo=corner.getImageData(0,0,w,h),pixels=photo.data;
-  for(var i=0;i<pixels.length;i+=4){
-   var tone=Math.max(0,Math.min(1,(.2126*pixels[i]+.7152*pixels[i+1]+.0722*pixels[i+2]-75)/171));
-   pixels[i]=25.228+227.772*tone;
-   pixels[i+1]=68.068+185.932*tone;
-   pixels[i+2]=99.96+155.04*tone;
-  }
-  corner.putImageData(photo,0,0);
   corner.scale(w,h);
   var fade=corner.createLinearGradient(.45,0,.55,.98);
   fade.addColorStop(0,'rgba(0,0,0,.96)');fade.addColorStop(.55,'rgba(0,0,0,.91)');fade.addColorStop(1,'rgba(0,0,0,.76)');
   corner.globalCompositeOperation='destination-in';corner.fillStyle=fade;corner.fillRect(0,0,1,1);
   lastPaintProgress=-1;update();
  };
- reflectionPhoto.src='images/river-study/cloud-water.png?v=3';
- function prepareFinalCloudLayers(image){
-  return [false,true].map(function(right){
-   var layer=document.createElement('canvas');
-   layer.width=480;layer.height=360;
-   var brush=layer.getContext('2d');
-   var w=image.naturalWidth,h=image.naturalHeight;
-   brush.save();
-   if (right) {
-    brush.translate(layer.width,0);
-    brush.scale(-1,1);
-   }
-   brush.drawImage(image,w*(right ? .04 : 0),h*(right ? .08 : 0),w*.54,h*.64,0,0,480,360);
-   brush.restore();
-   brush.scale(480,360);
-   var edge=right?1:0;
-   var mask=brush.createRadialGradient(edge,.05,0,edge,.05,.98);
-   mask.addColorStop(0,'rgba(0,0,0,.66)');
-   mask.addColorStop(.47,'rgba(0,0,0,.40)');
-   mask.addColorStop(1,'transparent');
-   brush.globalCompositeOperation='destination-in';
-   brush.fillStyle=mask;
-   brush.fillRect(0,0,1,1);
-   var sideFade=brush.createLinearGradient(0,0,1,0);
-   sideFade.addColorStop(0,'transparent');
-   sideFade.addColorStop(.36,'black');
-   sideFade.addColorStop(.88,'black');
-   sideFade.addColorStop(1,right?'black':'transparent');
-   brush.fillStyle=sideFade;brush.fillRect(0,0,1,1);
-   var bottomFade=brush.createLinearGradient(0,.57,0,1);
-   bottomFade.addColorStop(0,'black');bottomFade.addColorStop(1,'transparent');
-   brush.fillStyle=bottomFade;brush.fillRect(0,0,1,1);
-   return layer;
-  });
- }
- function prepareLowerCloud(image,x,y,width,height){
-  var layer=document.createElement('canvas');
-  layer.width=480;layer.height=260;
-  var brush=layer.getContext('2d');
-  var w=image.naturalWidth,h=image.naturalHeight;
-  brush.drawImage(image,w*x,h*y,w*width,h*height,0,0,layer.width,layer.height);
-  // Lift the pale cloud contours and let the blue water show through their gaps.
-  var cloud=brush.getImageData(0,0,layer.width,layer.height),pixels=cloud.data;
-  for(var i=0;i<pixels.length;i+=4){
-   var light=.2126*pixels[i]+.7152*pixels[i+1]+.0722*pixels[i+2];
-   pixels[i]=220;pixels[i+1]=236;pixels[i+2]=248;
-   pixels[i+3]=98*smooth((light-135)/73);
-  }
-  brush.putImageData(cloud,0,0);
-  brush.scale(layer.width,layer.height);
-  var feather=brush.createRadialGradient(.5,.5,.14,.5,.5,.5);
-  feather.addColorStop(0,'black');feather.addColorStop(1,'transparent');
-  brush.globalCompositeOperation='destination-in';
-  brush.fillStyle=feather;brush.fillRect(0,0,1,1);
-  return layer;
- }
+ reflectionPhoto.src='images/river-study/last-screen-blue-water.png';
  function cover(img){
   var shore=img===layers[layers.length-1].image;
   var scale=Math.max(texture.width/img.naturalWidth,texture.height/(img.naturalHeight*(shore ? .63 : 1)));
@@ -1067,27 +983,14 @@ var mottoWords=['Imagine','Create','Make','Inspire','Give','Repeat'];
   if(shore && cloudCorner){
    var width=texture.width,height=texture.height;
    var drift=.055*Math.sin(cloudClock/7000);
-   var reflectionY=height*(-.12+.015*Math.sin(cloudClock/11000));
-   var reflectionHeight=height*1.15;
+   var reflectionY=height*(-.025+.015*Math.sin(cloudClock/11000));
+   var reflectionHeight=height*1.045;
+   var reflectionWidth=width*1.12;
    if(portrait.matches && window.innerWidth<=767){
-    // Crop the landscape photo to the tall viewport without stretching the clouds.
-    var reflectionWidth=reflectionHeight*cloudCorner.width/cloudCorner.height;
-    var cropOffset=(width-reflectionWidth)*.57+width*drift;
-    ctx.drawImage(cloudCorner,cropOffset,reflectionY,reflectionWidth,reflectionHeight);
-   }else{
-    ctx.drawImage(cloudCorner,width*(-.155+drift),reflectionY,width*1.22,reflectionHeight);
+    reflectionWidth=Math.max(reflectionWidth,reflectionHeight*cloudCorner.width/cloudCorner.height);
    }
-   ctx.save();ctx.scale(width,height*.76);
-   var sun=ctx.createRadialGradient(.04,0,0,.04,0,.62);
-   sun.addColorStop(0,'rgb(255,255,255)');sun.addColorStop(.44,'rgba(247,251,255,.88)');sun.addColorStop(.62,'rgba(230,242,252,.52)');
-   sun.addColorStop(1,'rgba(255,255,255,0)');
-   ctx.fillStyle=sun;ctx.fillRect(0,0,1,1);ctx.restore();
-   if(finalCloudLayers.length){
-    ctx.drawImage(finalCloudLayers[0],width*.34,0,width*.56,height*.43);
-    ctx.drawImage(finalCloudLayers[1],width*.47,0,width*.53,height*.40);
-    ctx.drawImage(finalCloudLayers[2],width*(-.10+drift*.55),height*.49,width*.74,height*.44);
-    ctx.drawImage(finalCloudLayers[3],width*(.43+drift*.35),height*.58,width*.67,height*.41);
-   }
+   ctx.drawImage(cloudCorner,(width-reflectionWidth)/2+width*drift,
+    reflectionY,reflectionWidth,reflectionHeight);
   }
  }
  function smooth(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x);}
